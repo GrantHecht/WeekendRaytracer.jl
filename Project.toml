@@ -1,0 +1,13 @@
+name = "WeekendRaytracer"
+uuid = "a284304c-3a7b-42e4-a3b2-7beb87482235"
+authors = ["Grant Hecht"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.9.2"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
