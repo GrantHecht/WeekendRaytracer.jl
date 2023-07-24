@@ -10,7 +10,7 @@ end
 
 # Constructor
 function Image(file;aspect_ratio = 16.0 / 9.0, width = 400, samples_per_pixel = 100, max_depth = 50)
-    height  = Int(width / aspect_ratio)
+    height  = round(typeof(width),width / aspect_ratio)
     pix     = zeros(RGB, height, width)
     return Image(aspect_ratio, width, height, samples_per_pixel, max_depth, file, pix)
 end
@@ -45,9 +45,9 @@ function _shoot_sequential(image::Image, camera::Camera, world::AbstractHittable
                 pg += pixel_color.g
                 pb += pixel_color.b
             end
-            new_color = RGB(clamp(sqrt(pr*scale), 0.0, 0.999),
-                            clamp(sqrt(pg*scale), 0.0, 0.999),
-                            clamp(sqrt(pb*scale), 0.0, 0.999))
+            new_color = RGB(clamp(sqrt(pr*scale), 0.0, 1.0),
+                            clamp(sqrt(pg*scale), 0.0, 1.0),
+                            clamp(sqrt(pb*scale), 0.0, 1.0))
             image.pix[j, i] = new_color
         end
     end
@@ -58,14 +58,11 @@ end
 function _shoot_multithreaded(image::Image, camera::Camera, world::AbstractHittable)
     scale = 1.0 / image.samples_per_pixel 
     #@floop for idx in eachindex(image.pix)
-    Threads.@threads for idx in eachindex(image.pix)
+    for idx in eachindex(image.pix)
         row = mod(idx - 1, image.height) + 1
         col = div(idx - 1, image.height) + 1
 
-        pr = 0.0
-        pg = 0.0
-        pb = 0.0
-        for s in 1:image.samples_per_pixel
+        @floop for s in 1:image.samples_per_pixel
             # Compute u and v (coordinates of point to shoot ray)
             u = (col + rand()) / image.width
             v = (image.height - row + rand()) / image.height
@@ -77,14 +74,13 @@ function _shoot_multithreaded(image::Image, camera::Camera, world::AbstractHitta
             pixel_color = ray_color(r, world, image.max_depth)
 
             # Accumulate colors
-            pr += pixel_color.r
-            pg += pixel_color.g
-            pb += pixel_color.b
+            @reduce(pr += pixel_color.r, pg += pixel_color.g, pb += pixel_color.b)
         end
+
         # Set color by averaging accumulated colors and correcting for gamma
-        new_color = RGB(clamp(sqrt(pr*scale), 0.0, 0.999),
-                        clamp(sqrt(pg*scale), 0.0, 0.999),
-                        clamp(sqrt(pb*scale), 0.0, 0.999))
+        new_color = RGB(clamp(sqrt(pr*scale), 0.0, 1.0),
+                        clamp(sqrt(pg*scale), 0.0, 1.0),
+                        clamp(sqrt(pb*scale), 0.0, 1.0))
         image.pix[idx] = new_color
     end
     save(image.file, image.pix)

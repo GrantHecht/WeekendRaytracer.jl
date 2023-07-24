@@ -1,29 +1,58 @@
 
-struct Camera{T <: AbstractArray}
+struct Camera{T <: AbstractArray, U <: AbstractFloat}
+    # Origin of camera
     origin              ::T
+
+    # Location of lower left corner of viewport (in pixle coordinates)
     lower_left_corner   ::T
+
+    # Horizontal and vertial dimensions of viewport (in pixles)
     horizontal          ::T
     vertical            ::T
+
+    # Camera frame basis vectors
+    u                   ::T
+    v                   ::T
+    w                   ::T
+
+    # Camera lense radius
+    lens_radius        ::U
 end
 
 # Constructor
-function Camera()
-    aspect_ratio    = 16.0 / 9.0
-    viewport_height = 2.0
+function Camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist)
+    theta           = deg2rad(vfov)
+    h               = tan(0.5 * theta)
+    viewport_height = 2.0 * h
     viewport_width  = aspect_ratio * viewport_height
-    focal_length    = 1.0
 
-    origin          = SVector(0.0, 0.0, 0.0)
-    horizontal      = SVector(viewport_width, 0.0, 0.0)
-    vertical        = SVector(0.0, viewport_height, 0.0)
-    lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - 
-                            SVector(0.0, 0.0, focal_length)
-    return Camera(origin, lower_left_corner, horizontal, vertical)
+    wvec            = lookfrom - lookat
+    uvec            = cross(vup, wvec)
+    vvec            = cross(wvec, uvec)
+    invNwvec        = 1.0 / norm(wvec)
+    invNuvec        = 1.0 / norm(uvec)
+    invNvvec        = 1.0 / norm(vvec)
+    w               = SVector(invNwvec*wvec[1], invNwvec*wvec[2], invNwvec*wvec[3])
+    u               = SVector(invNuvec*uvec[1], invNuvec*uvec[2], invNuvec*uvec[3])
+    v               = SVector(invNvvec*vvec[1], invNvvec*vvec[2], invNvvec*vvec[3])
+
+    origin          = lookfrom
+    horizontal      = focus_dist * viewport_width * u
+    vertical        = focus_dist * viewport_height * v
+    lower_left_corner = origin - 0.5 * horizontal - 0.5 * vertical - focus_dist * w
+    lens_radius     = 0.5 * aperture
+    return Camera(origin, lower_left_corner, horizontal, vertical, u, v, w, lens_radius)
 end
 
 # Function to get ray
-function get_ray(cam::Camera, u, v) 
-    return Ray(cam.origin, 
-               cam.lower_left_corner + 
-               u*cam.horizontal + v*cam.vertical - cam.origin)
+function get_ray(cam::Camera, s::T, t::T)  where {T <: AbstractFloat}
+    unit    = random_in_unit_disk(T)
+    rd      = SVector(cam.lens_radius*unit[1], cam.lens_radius*unit[2])
+    offset  = SVector(cam.u[1]*rd[1] + cam.v[1]*rd[2],
+                      cam.u[2]*rd[1] + cam.v[2]*rd[2],
+                      0.0)
+    origin  = SVector(cam.origin[1] + offset[1],
+                      cam.origin[2] + offset[2],
+                      cam.origin[3] + offset[3])
+    return Ray(origin, cam.lower_left_corner + s*cam.horizontal + t*cam.vertical - cam.origin - offset)
 end

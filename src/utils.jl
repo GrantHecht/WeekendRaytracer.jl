@@ -20,12 +20,58 @@ function reflect(v, n)
     return rv
 end
 
+# Function to compute refraction vector
+function refract(uv, n, etai_over_etat)
+    cos_theta   = min(dot(-uv, n), 1.0)
+    r_out_perp  = SVector(etai_over_etat * (uv[1] + cos_theta*n[1]),
+                          etai_over_etat * (uv[2] + cos_theta*n[2]),
+                          etai_over_etat * (uv[3] + cos_theta*n[3]))
+    temp        = -sqrt(abs(1.0 - r_out_perp[1]^2 - r_out_perp[2]^2 - r_out_perp[3]^2))
+    r_out_para  = SVector(temp*n[1], temp*n[2], temp*n[3])
+    rv          = SVector(r_out_perp[1] + r_out_para[1],
+                          r_out_perp[2] + r_out_para[2],
+                          r_out_perp[3] + r_out_para[3])
+    return rv
+end
+
+# Function to compute reflectance
+function reflectance(cosine, ref_idx)
+    # Use Schlick's approximation for reflectance
+    r0 = (1.0 - ref_idx) / (1.0 + ref_idx)
+    r0 *= r0
+    return r0 + (1.0 - r0)*(1.0 - cosine)^5
+end
+
+# Function for getting random vector in unit dist
+function random_in_unit_disk(::Type{T}) where {T <: AbstractFloat}
+    while true
+        c1 = 2.0*rand(T) - 1.0
+        c2 = 2.0*rand(T) - 1.0
+        if c1*c1 + c2*c2 < 1.0
+            return SVector(c1, c2, 0.0)
+        end
+    end
+end
+
+function random_in_unit_disk!(vec::AbstractVector{T}) where {T <: AbstractFloat}
+    while true
+        c1 = 2.0*rand(T) - 1.0
+        c2 = 2.0*rand(T) - 1.0
+        if c1*c1 + c2*c2 < 1.0
+            vec[1] = c1
+            vec[2] = c2
+            vec[3] = 0.0
+            return nothing
+        end
+    end
+end
+
 # Function for getting random vector in unit sphere
 function random_in_unit_sphere(::Type{T}) where{T <: AbstractFloat}
     while true
-        c1 = rand(T)
-        c2 = rand(T)
-        c3 = rand(T)
+        c1 = 2.0*rand(T) - 1.0
+        c2 = 2.0*rand(T) - 1.0
+        c3 = 2.0*rand(T) - 1.0
         if c1*c1 + c2*c2 + c3*c3 < 1.0
             return SVector(c1, c2, c3)
         end
@@ -34,9 +80,9 @@ end
 
 function random_in_unit_sphere!(vec::AbstractVector{T}) where{T <: AbstractFloat}
     while true
-        c1 = rand(T)
-        c2 = rand(T)
-        c3 = rand(T)
+        c1 = 2.0*rand(T) - 1.0
+        c2 = 2.0*rand(T) - 1.0
+        c3 = 2.0*rand(T) - 1.0
         if c1*c1 + c2*c2 + c3*c3 < 1.0
             vec[1] = c1
             vec[2] = c2

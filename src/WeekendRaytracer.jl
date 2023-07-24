@@ -3,12 +3,12 @@ module WeekendRaytracer
 export Ray, at
 export Image, shoot!
 export Camera, get_ray
+
+# Hittables
 export Sphere, HittableList
-export Lambertian, Metal
-export HitRecord
-export ray_color
-export scatter
-export random_unit_vector, random_unit_vector!
+
+# Materials
+export Lambertian, Dielectric, Metal
 
 using StaticArrays
 using LinearAlgebra
@@ -34,6 +34,7 @@ include("HitRecord.jl")
 # Material
 include("Material/AbstractMaterial.jl")
 include("Material/Lambertian.jl")
+include("Material/Dielectric.jl")
 include("Material/Metal.jl")
 
 # Hittable (Objects that can be hit by a Ray)
