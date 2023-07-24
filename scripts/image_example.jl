@@ -1,9 +1,12 @@
 using WeekendRaytracer
 using Images
+using FileIO
 using StaticArrays
 using LinearAlgebra
+using Profile
 using BenchmarkTools
 using Infiltrator
+using JET
 
 function random_scene()
     # Create emplty vector for accumulatng objects
@@ -15,8 +18,8 @@ function random_scene()
     ground_material = Lambertian(0.5, 0.5, 0.5)
     push!(objects, Sphere(SVector(0.0, -1000.0, 0.0), 1000.0, ground_material))
 
-    for a = -11:10
-        for b = -11:10
+    for a = -2:2
+        for b = -2:2
             choose_mat = rand()
             center = SVector(a + 0.9*rand(), 0.2, b + 0.9*rand())
 
@@ -57,8 +60,8 @@ end
 function main()
     # Image
     image = Image("test.png"; aspect_ratio      = 3.0 / 2.0, 
-                              width             = 1200, 
-                              samples_per_pixel = 500,
+                              width             = 400, 
+                              samples_per_pixel = 100,
                               max_depth         = 50)
 
     # World
@@ -73,9 +76,23 @@ function main()
     cam = Camera(lookfrom,lookat,vup,20.0,image.aspect_ratio,aperture,dist_to_foc)
 
     # Shoot image
-    shoot!(image, cam, world; threaded = true)
-    #@btime shoot!($image, $cam, $world; threaded = false)
-    #@btime shoot!($image, $cam, $world; threaded = true)
+    shoot!(image, cam, world, threaded = true)
+    save(image.file, image.pix)
+
+    # Benchmarking
+    #@btime WeekendRaytracer._shoot_sequential!($image, $cam, $world)
+    #@btime WeekendRaytracer.get_pixel_color($image, $cam, $world, 
+    #            $(rand(1:image.height)), $(rand(1:image.width)))
+    #i = rand(1:image.height)
+    #j = rand(1:image.width)
+    #u = (j + rand()) / image.width
+    #v = (image.height - i + rand()) / image.height
+    #r =  WeekendRaytracer.get_ray(cam, u, v)
+    #@btime WeekendRaytracer.find_closest_hit_object($r, $(world))
+
+    #WeekendRaytracer.ray_color(r, world, 50)
+    #Profile.clear_malloc_data()
+    #WeekendRaytracer.ray_color(r, world, 50)
 end
 
 main()

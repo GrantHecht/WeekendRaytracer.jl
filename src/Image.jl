@@ -18,71 +18,55 @@ end
 # Define function to shoot image
 function shoot!(image::Image, camera::Camera, world::AbstractHittable; threaded = false)
     if !threaded
-        _shoot_sequential(image, camera, world)
+        _shoot_sequential!(image, camera, world)
     else
-        _shoot_multithreaded(image, camera, world)
+        _shoot_multithreaded!(image, camera, world)
     end
 end
 
-function _shoot_sequential(image::Image, camera::Camera, world::AbstractHittable)
-    scale = 1.0 / image.samples_per_pixel 
-    for i in 1:image.width
-        for j in 1:image.height
-            pr = 0.0
-            pg = 0.0
-            pb = 0.0
-            for s in 1:image.samples_per_pixel
-                # Compute u and v
-                u = (i + rand()) / image.width
-                v = (image.height - j + rand()) / image.height
+function get_pixel_color(image::Image, camera::Camera, world::AbstractHittable, row, col)
+    scale   = 1.0 / image.samples_per_pixel
+    pr      = 0.0
+    pg      = 0.0
+    pb      = 0.0
+    @inbounds for s in 1:image.samples_per_pixel
+        # Compute u and v
+        u = (col + rand()) / image.width
+        v = (image.height - row + rand()) / image.height
 
-                # Create ray
-                r = get_ray(camera, u, v)
+        # Create ray
+        r = get_ray(camera, u, v)
 
-                # Set color
-                pixel_color = ray_color(r, world, image.max_depth)
-                pr += pixel_color.r
-                pg += pixel_color.g
-                pb += pixel_color.b
-            end
-            new_color = RGB(clamp(sqrt(pr*scale), 0.0, 1.0),
-                            clamp(sqrt(pg*scale), 0.0, 1.0),
-                            clamp(sqrt(pb*scale), 0.0, 1.0))
-            image.pix[j, i] = new_color
+        # Update color
+        pixel_color = ray_color(r, world, image.max_depth)
+        pr += pixel_color.r
+        pg += pixel_color.g
+        pb += pixel_color.b
+    end
+    return RGB(clamp(sqrt(pr*scale), 0.0, 1.0),
+               clamp(sqrt(pg*scale), 0.0, 1.0),
+               clamp(sqrt(pb*scale), 0.0, 1.0))
+end
+
+function _shoot_sequential!(image::Image, camera::Camera, world::AbstractHittable)
+    @inbounds for col in 1:image.width
+        for row in 1:image.height
+            color = get_pixel_color(image, camera, world, row, col) 
+            image.pix[row, col] = color
         end
     end
-    save(image.file, image.pix)
     return nothing
 end
 
-function _shoot_multithreaded(image::Image, camera::Camera, world::AbstractHittable)
-    scale = 1.0 / image.samples_per_pixel 
-    #@floop for idx in eachindex(image.pix)
-    for idx in eachindex(image.pix)
+function _shoot_multithreaded!(image::Image, camera::Camera, world::AbstractHittable)
+    @inbounds Threads.@threads for idx in eachindex(image.pix)
+        # Compute row and column
         row = mod(idx - 1, image.height) + 1
         col = div(idx - 1, image.height) + 1
 
-        @floop for s in 1:image.samples_per_pixel
-            # Compute u and v (coordinates of point to shoot ray)
-            u = (col + rand()) / image.width
-            v = (image.height - row + rand()) / image.height
-
-            # Create ray shooting from camera origin to point (v,u)
-            r = get_ray(camera, u, v)
-
-            # Set color by shooting ray at world with max depth reflections
-            pixel_color = ray_color(r, world, image.max_depth)
-
-            # Accumulate colors
-            @reduce(pr += pixel_color.r, pg += pixel_color.g, pb += pixel_color.b)
-        end
-
         # Set color by averaging accumulated colors and correcting for gamma
-        new_color = RGB(clamp(sqrt(pr*scale), 0.0, 1.0),
-                        clamp(sqrt(pg*scale), 0.0, 1.0),
-                        clamp(sqrt(pb*scale), 0.0, 1.0))
-        image.pix[idx] = new_color
+        color = get_pixel_color(image, camera, world, row, col)
+        image.pix[idx] = color
     end
-    save(image.file, image.pix)
     return nothing
 end

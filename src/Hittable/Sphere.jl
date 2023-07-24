@@ -47,13 +47,12 @@ function hit(ray::Ray, s::Sphere, t_min, t_max)
         ir          = 1.0 / s.radius
         t           = root
         p           = at(ray, t)
-        mat         = s.mat
         on          = SVector(ir*(p[1] - s.center[1]),
                               ir*(p[2] - s.center[2]),
                               ir*(p[3] - s.center[3]))
         front_face  = dot(ray.dir, on) < 0
         normal      = front_face ? on : -on
-        rec         = HitRecord(p, normal, t, mat, front_face)
+        rec         = HitRecord(p, normal, t, s.mat, front_face)
 
         return true, rec
     end

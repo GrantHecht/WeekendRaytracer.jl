@@ -5,11 +5,13 @@ version = "1.0.0-DEV"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
 FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 Infiltrator = "5903a43b-9cc3-4c30-8d17-598619ec4e9b"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 

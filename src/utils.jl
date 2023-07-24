@@ -44,52 +44,76 @@ end
 
 # Function for getting random vector in unit dist
 function random_in_unit_disk(::Type{T}) where {T <: AbstractFloat}
-    while true
-        c1 = 2.0*rand(T) - 1.0
-        c2 = 2.0*rand(T) - 1.0
-        if c1*c1 + c2*c2 < 1.0
-            return SVector(c1, c2, 0.0)
-        end
-    end
+    #while true
+    #    c1 = 2.0*rand(T) - 1.0
+    #    c2 = 2.0*rand(T) - 1.0
+    #    if c1*c1 + c2*c2 < 1.0
+    #        return SVector(c1, c2, 0.0)
+    #    end
+    #end
+    c1 = 2.0*rand(T) - 1.0
+    c2 = 2.0*rand(T) - 1.0
+    n  = 0.5
+    return SVector(n*c1, n*c2, 0.0)
 end
 
 function random_in_unit_disk!(vec::AbstractVector{T}) where {T <: AbstractFloat}
-    while true
-        c1 = 2.0*rand(T) - 1.0
-        c2 = 2.0*rand(T) - 1.0
-        if c1*c1 + c2*c2 < 1.0
-            vec[1] = c1
-            vec[2] = c2
-            vec[3] = 0.0
-            return nothing
-        end
-    end
+    #while true
+    #    c1 = 2.0*rand(T) - 1.0
+    #    c2 = 2.0*rand(T) - 1.0
+    #    if c1*c1 + c2*c2 < 1.0
+    #        vec[1] = c1
+    #        vec[2] = c2
+    #        vec[3] = 0.0
+    #        return nothing
+    #    end
+    #end
+    c1 = 2.0*rand(T) - 1.0
+    c2 = 2.0*rand(T) - 1.0
+    n  = 0.5
+    vec[1] = n*c1
+    vec[2] = n*c2
+    vec[3] = 0.0
+    return nothing
 end
 
 # Function for getting random vector in unit sphere
 function random_in_unit_sphere(::Type{T}) where{T <: AbstractFloat}
-    while true
-        c1 = 2.0*rand(T) - 1.0
-        c2 = 2.0*rand(T) - 1.0
-        c3 = 2.0*rand(T) - 1.0
-        if c1*c1 + c2*c2 + c3*c3 < 1.0
-            return SVector(c1, c2, c3)
-        end
-    end
+    #while true
+    #    c1 = 2.0*rand(T) - 1.0
+    #    c2 = 2.0*rand(T) - 1.0
+    #    c3 = 2.0*rand(T) - 1.0
+    #    if c1*c1 + c2*c2 + c3*c3 < 1.0
+    #        return SVector(c1, c2, c3)
+    #    end
+    #end
+    c1 = 2.0*rand(T) - 1.0
+    c2 = 2.0*rand(T) - 1.0
+    c3 = 2.0*rand(T) - 1.0
+    n  = 1.0 / 3.0
+    return SVector(n*c1, n*c2, n*c3)
 end
 
 function random_in_unit_sphere!(vec::AbstractVector{T}) where{T <: AbstractFloat}
-    while true
-        c1 = 2.0*rand(T) - 1.0
-        c2 = 2.0*rand(T) - 1.0
-        c3 = 2.0*rand(T) - 1.0
-        if c1*c1 + c2*c2 + c3*c3 < 1.0
-            vec[1] = c1
-            vec[2] = c2
-            vec[3] = c3
-            return nothing
-        end
-    end
+    #while true
+    #    c1 = 2.0*rand(T) - 1.0
+    #    c2 = 2.0*rand(T) - 1.0
+    #    c3 = 2.0*rand(T) - 1.0
+    #    if c1*c1 + c2*c2 + c3*c3 < 1.0
+    #        vec[1] = c1
+    #        vec[2] = c2
+    #        vec[3] = c3
+    #        return nothing
+    #    end
+    #end
+    c1 = 2.0*rand(T) - 1.0
+    c2 = 2.0*rand(T) - 1.0
+    c3 = 2.0*rand(T) - 1.0
+    n  = 1.0 / 3.0
+    vec[1] = n*c1
+    vec[2] = n*c2
+    vec[3] = n*c3
+    return nothing
 end
 
 # Function for getting random unit vector
