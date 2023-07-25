@@ -59,10 +59,10 @@ end
 
 function main()
     # Image
-    image = Image("test.png"; aspect_ratio      = 3.0 / 2.0, 
-                              width             = 1200, 
-                              samples_per_pixel = 500,
-                              max_depth         = 50)
+    image = Image("test_new.png"; aspect_ratio      = 3.0 / 2.0, 
+                                  width             = 1200, 
+                                  samples_per_pixel = 500,
+                                  max_depth         = 50)
 
     # World
     world = random_scene()
@@ -76,20 +76,25 @@ function main()
     cam = Camera(lookfrom,lookat,vup,20.0,image.aspect_ratio,aperture,dist_to_foc)
 
     # Shoot image
-    shoot!(image, cam, world, threaded = true)
+    #@btime shoot!($image, $cam, $world, threaded = false)
+    #@btime shoot!($image, $cam, $world, threaded = true)
+    @time shoot!(image, cam, world, threaded = true)
     save(image.file, image.pix)
 
     # Benchmarking
     #@btime WeekendRaytracer._shoot_sequential!($image, $cam, $world)
     #@btime WeekendRaytracer.get_pixel_color($image, $cam, $world, 
     #            $(rand(1:image.height)), $(rand(1:image.width)))
-    #i = rand(1:image.height)
-    #j = rand(1:image.width)
-    #u = (j + rand()) / image.width
-    #v = (image.height - i + rand()) / image.height
-    #r =  WeekendRaytracer.get_ray(cam, u, v)
-    #WeekendRaytracer.find_closest_hit_object_fast(r, world)
-    #@btime WeekendRaytracer.find_closest_hit_object($r, $(world))
+    # i = rand(1:image.height)
+    # j = rand(1:image.width)
+    # u = (j + rand()) / image.width
+    # v = (image.height - i + rand()) / image.height
+    # r =  WeekendRaytracer.get_ray(cam, u, v)
+    # #@btime WeekendRaytracer.find_closest_hit_object($r, $(world))
+    # #@benchmark WeekendRaytracer.get_pixel_color($image, $cam, $world, $i, $j)
+    #@benchmark WeekendRaytracer._shoot_sequential!($image, $cam, $world)
+    # Profile.clear_malloc_data()
+    # WeekendRaytracer._shoot_sequential!(image, cam, world)
 
     #WeekendRaytracer.ray_color(r, world, 50)
     #Profile.clear_malloc_data()

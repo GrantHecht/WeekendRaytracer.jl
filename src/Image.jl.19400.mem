@@ -1,0 +1,105 @@
+        - mutable struct Image{FT, IT, PT}
+        -     # Image aspect ratio
+        -     aspect_ratio::FT
+        - 
+        -     # Image width and height in pixels
+        -     width::IT
+        -     height::IT
+        - 
+        -     # Samples averaged together per pixel
+        -     samples_per_pixel::IT
+        - 
+        -     # Max recursion depth (max number of ray bounces)
+        -     max_depth::IT
+        - 
+        -     # File to save image to
+        -     file::String
+        - 
+        -     # Allocated array for pixels
+        -     pix::PT
+        - end
+        - 
+        - # Constructor
+        - function Image(file;aspect_ratio = 16.0 / 9.0, width = 400, samples_per_pixel = 100, max_depth = 50)
+        -     FT      = typeof(aspect_ratio)
+        -     height  = round(typeof(width),width / aspect_ratio)
+        -     pix     = zeros(RGB{FT}, height, width)
+        -     return Image(aspect_ratio, width, height, samples_per_pixel, max_depth, file, pix)
+        - end
+        - 
+        - # Define function to shoot image
+        0 function shoot!(image::Image, camera::Camera, world::AbstractHittable; threaded = false)
+        -     if !threaded
+        -         _shoot_sequential!(image, camera, world)
+        -     else
+        -         _shoot_multithreaded!(image, camera, world)
+        -     end
+        - end
+        - 
+        - function get_pixel_color(image::Image{FT,IT,PT}, camera::Camera, world::AbstractHittable, row, col) where {FT,IT,PT}
+        0     scale   = 1.0 / image.samples_per_pixel
+        -     pr      = 0.0
+        -     pg      = 0.0
+        -     pb      = 0.0
+        0     @inbounds for s in 1:image.samples_per_pixel
+        -         # Compute u and v
+        0         u = (col + rand()) / image.width
+        0         v = (image.height - row + rand()) / image.height
+        - 
+        -         # Create ray
+        0         r = get_ray(camera, u, v)
+        - 
+        -         # Update color
+        0         pixel_color = ray_color(r, world, image.max_depth)
+        0         pr += pixel_color.r
+        0         pg += pixel_color.g
+        0         pb += pixel_color.b
+        0     end
+        0     return RGB(FT(clamp(sqrt(pr*scale), 0.0, 1.0)),
+        -                FT(clamp(sqrt(pg*scale), 0.0, 1.0)),
+        -                FT(clamp(sqrt(pb*scale), 0.0, 1.0)))
+        - end
+        - 
+        - function _shoot_sequential!(image::Image, camera::Camera, world::AbstractHittable)
+        0     @inbounds for idx in eachindex(image.pix) 
+        -         # Compute row and column
+        0         row = mod(idx - 1, image.height) + 1
+        0         col = div(idx - 1, image.height) + 1
+        - 
+        -         # Set color by averading accumulated colors and correcting for gamma
+        0         image.pix[idx] = get_pixel_color(image, camera, world, row, col)
+        0     end
+        0     return nothing
+        - end
+        - 
+        - function _shoot_multithreaded!(image::Image, camera::Camera, world::AbstractHittable, start, stop)
+        -     @inbounds for idx in start:stop
+        -         # Compute row and column
+        -         row = mod(idx - 1, image.height) + 1
+        -         col = div(idx - 1, image.height) + 1
+        - 
+        -         # Set color by averaging accumulated colors and correcting for gamma
+        -         color = get_pixel_color(image, camera, world, row, col)
+        -         image.pix[idx] = color
+        -     end
+        -     return nothing
+        - end
+        - 
+        - function _shoot_multithreaded!(image::Image, camera::Camera, world::AbstractHittable)
+        -     # Get number of threads available
+        0     nt = Threads.nthreads()
+        - 
+        -     # Compute number of pixles to compute per thread
+        0     npix           = length(image.pix)
+        0     pix_per_thread = div(npix, nt)
+        - 
+        -     # Spawn tasks
+        0     starts = range(start = 1, step = pix_per_thread, length = nt)
+        0     stops  = range(start = pix_per_thread, step = pix_per_thread, length = nt)
+        0     Threads.@threads for i in eachindex(starts)
+        -         start = starts[i]
+        -         stop  = i == nt ? npix : stops[i]
+        -         _shoot_multithreaded!(image, camera, world, start, stop)
+        -     end
+        0     return nothing
+        - end

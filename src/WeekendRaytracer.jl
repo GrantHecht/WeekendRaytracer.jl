@@ -32,10 +32,11 @@ include("Camera.jl")
 include("HitRecord.jl")
 
 # Material
-include("Material/AbstractMaterial.jl")
-include("Material/Lambertian.jl")
-include("Material/Dielectric.jl")
-include("Material/Metal.jl")
+include("Material/Material.jl")
+#include("Material/AbstractMaterial.jl")
+#include("Material/Lambertian.jl")
+#include("Material/Dielectric.jl")
+#include("Material/Metal.jl")
 
 # Hittable (Objects that can be hit by a Ray)
 include("Hittable/Hittable.jl")
