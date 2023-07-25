@@ -12,20 +12,20 @@ mutable struct Image{FT, IT, PT}
     # Max recursion depth (max number of ray bounces)
     max_depth::IT
 
-    # File to save image to
-    file::String
-
     # Allocated array for pixels
     pix::PT
 end
 
 # Constructor
-function Image(file;aspect_ratio = 16.0 / 9.0, width = 400, samples_per_pixel = 100, max_depth = 50)
+function Image(;aspect_ratio = 16.0 / 9.0, width = 400, samples_per_pixel = 100, max_depth = 50)
     FT      = typeof(aspect_ratio)
     height  = round(typeof(width),width / aspect_ratio)
     pix     = zeros(RGB{FT}, height, width)
-    return Image(aspect_ratio, width, height, samples_per_pixel, max_depth, file, pix)
+    return Image(aspect_ratio, width, height, samples_per_pixel, max_depth, pix)
 end
+
+# Define FileIO.save
+FileIO.save(filename, image::Image) = save(filename, image.pix)
 
 # Define function to shoot image
 function shoot!(image::Image, camera::Camera, world::AbstractHittable; threaded = false)
