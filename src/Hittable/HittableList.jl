@@ -24,7 +24,6 @@ function ray_color(ray::Ray, world::HittableList, depth)
         tm       = 1.0 - t
         return RGB(tm + t*0.5, tm + t*0.7, tm + t)
     else
-        # NOTE: Indexing into world.objects[idx] is allocating
         flag, scattered, attenuation = scatter(ray, world.objects[idx], 0.001, Inf)
         if flag
             new_color = ray_color(scattered, world, depth - 1)
@@ -46,7 +45,6 @@ function find_closest_hit_object(ray::Ray, world::HittableList)
     idx             = 1  
     t               = 0.0
     @inbounds for i in eachindex(world.objects)
-        # NOTE: Indexing into world.objects[i] is allocating
         flag, t = hit_time(ray, world.objects[i], t_min, closest_so_far)
         if flag 
             hit_anything = true
