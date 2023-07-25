@@ -60,7 +60,7 @@ end
 function main()
     # Image
     image = Image("test_new.png"; aspect_ratio      = 3.0 / 2.0, 
-                                  width             = 1200, 
+                                  width             = 3840, 
                                   samples_per_pixel = 500,
                                   max_depth         = 50)
 
