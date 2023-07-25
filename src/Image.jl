@@ -58,8 +58,8 @@ function _shoot_sequential!(image::Image, camera::Camera, world::AbstractHittabl
     return nothing
 end
 
-function _shoot_multithreaded!(image::Image, camera::Camera, world::AbstractHittable)
-    @inbounds Threads.@threads for idx in eachindex(image.pix)
+function _shoot_multithreaded!(image::Image, camera::Camera, world::AbstractHittable, start, stop)
+    @inbounds for idx in start:stop
         # Compute row and column
         row = mod(idx - 1, image.height) + 1
         col = div(idx - 1, image.height) + 1
@@ -67,6 +67,25 @@ function _shoot_multithreaded!(image::Image, camera::Camera, world::AbstractHitt
         # Set color by averaging accumulated colors and correcting for gamma
         color = get_pixel_color(image, camera, world, row, col)
         image.pix[idx] = color
+    end
+    return nothing
+end
+
+function _shoot_multithreaded!(image::Image, camera::Camera, world::AbstractHittable)
+    # Get number of threads available
+    nt = Threads.nthreads()
+
+    # Compute number of pixles to compute per thread
+    npix           = length(image.pix)
+    pix_per_thread = div(npix, nt)
+
+    # Spawn tasks
+    starts = range(start = 1, step = pix_per_thread, length = nt)
+    stops  = range(start = pix_per_thread, step = pix_per_thread, length = nt)
+    Threads.@threads for i in eachindex(starts)
+        start = starts[i]
+        stop  = i == nt ? npix : stops[i]
+        _shoot_multithreaded!(image, camera, world, start, stop)
     end
     return nothing
 end

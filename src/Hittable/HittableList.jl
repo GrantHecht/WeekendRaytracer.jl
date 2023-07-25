@@ -57,5 +57,3 @@ function find_closest_hit_object(ray::Ray, world::HittableList)
     return hit_anything, idx
 end
 
-macro find_closest_hit(ray::Ray, world::HittableList)
-end

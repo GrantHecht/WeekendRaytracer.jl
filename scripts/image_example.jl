@@ -18,8 +18,8 @@ function random_scene()
     ground_material = Lambertian(0.5, 0.5, 0.5)
     push!(objects, Sphere(SVector(0.0, -1000.0, 0.0), 1000.0, ground_material))
 
-    for a = -2:2
-        for b = -2:2
+    for a = -11:10
+        for b = -11:10
             choose_mat = rand()
             center = SVector(a + 0.9*rand(), 0.2, b + 0.9*rand())
 
@@ -60,8 +60,8 @@ end
 function main()
     # Image
     image = Image("test.png"; aspect_ratio      = 3.0 / 2.0, 
-                              width             = 400, 
-                              samples_per_pixel = 100,
+                              width             = 1200, 
+                              samples_per_pixel = 500,
                               max_depth         = 50)
 
     # World
@@ -88,6 +88,7 @@ function main()
     #u = (j + rand()) / image.width
     #v = (image.height - i + rand()) / image.height
     #r =  WeekendRaytracer.get_ray(cam, u, v)
+    #WeekendRaytracer.find_closest_hit_object_fast(r, world)
     #@btime WeekendRaytracer.find_closest_hit_object($r, $(world))
 
     #WeekendRaytracer.ray_color(r, world, 50)
