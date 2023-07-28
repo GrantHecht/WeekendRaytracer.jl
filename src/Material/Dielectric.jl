@@ -29,7 +29,7 @@ function scatter(ray_in::Ray, rec::HitRecord{T,U,M}) where {T,U,M <: Dielectric}
                        refract(unit_dir, rec.normal, refraction_ratio)
 
     # Compute scattered ray
-    scattered = Ray(SVector(rec.p...), direction)
+    scattered = Ray(SVector(rec.p...), direction, time(ray_in))
     flag      = true
     return flag, scattered, attenuation
 end

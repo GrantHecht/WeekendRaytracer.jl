@@ -27,7 +27,7 @@ function scatter(ray_in::Ray, rec::HitRecord{T,U,M}) where {T,U,M <: Metal}
     
     # Return bool indicating ray was scattered, the scattered ray, and attenuation
     rng_ref     = reflected + rec.mat.fuzz*random_in_unit_sphere(U)
-    scattered   = Ray(SVector(rec.p...), rng_ref)
+    scattered   = Ray(SVector(rec.p...), rng_ref, time(ray_in))
     attenuation = rec.mat.albedo
     flag        = dot(scattered.dir, rec.normal) > 0
     return flag, scattered, attenuation

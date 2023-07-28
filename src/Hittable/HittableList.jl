@@ -26,6 +26,21 @@ function HittableList(args...)
     HittableList(args)
 end
 
+# Define bounding_box method
+function bounding_box(hl::HittableList, time0, time1)
+    out_box = AxisAlignedBoundingBox(
+        SVector(0.0, 0.0, 0.0),
+        SVector(0.0, 0.0, 0.0)
+    )
+    first_box = true
+    for i in eachindex(hl.spheres)
+        box = bounding_box(hl.spheres[i], time0, time1)
+        out_box = first_box ? box : surrounding_box(out_box, box)
+        first_box = false
+    end
+    return out_box
+end
+
 # Define ray_color method
 function ray_color(ray::Ray, world::HittableList, depth)
     # If we've exceeded the ray bounce limit, no more light is gathered

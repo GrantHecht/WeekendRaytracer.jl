@@ -1,11 +1,4 @@
 
-module WorldGeneration
-
-# Use WeekendRaytracer
-using StaticArrays
-using Images
-using ..WeekendRaytracer
-
 # Random Scene from Ray Tracing in One Weekend
 # See https://raytracing.github.io/books/RayTracingInOneWeekend.html
 function random_scene()
@@ -15,7 +8,10 @@ function random_scene()
     objects = []
 
     # The ground
-    ground_material = Lambertian(0.5, 0.5, 0.5)
+    #ground_material = Lambertian(0.5, 0.5, 0.5)
+    #ground_material = Metal(RGB(0.5, 0.5, 0.5), 0.5*rand())
+    ground_texture  = CheckerTexture(RGB(0.2, 0.3, 0.1), RGB(0.9, 0.9, 0.9))
+    ground_material = Lambertian(ground_texture)
     push!(objects, Sphere(SVector(0.0, -1000.0, 0.0), 1000.0, ground_material))
 
     for a = -11:10
@@ -28,7 +24,8 @@ function random_scene()
                     # Diffuse
                     albedo = RGB(rand()*rand(), rand()*rand(), rand()*rand())
                     sphere_meterial = Lambertian(albedo)
-                    push!(objects, Sphere(center, 0.2, sphere_meterial))
+                    center2 = center + SVector(0.0, 0.5*rand(), 0.0)
+                    push!(objects, Sphere(center, center2, 0.0, 1.0, 0.2, sphere_meterial))
 
                 elseif choose_mat < 0.95
                     # Metal
@@ -54,7 +51,6 @@ function random_scene()
     mat3 = Metal(0.7, 0.6, 0.5, 0.0)
     push!(objects, Sphere(SVector(4.0, 1.0, 0.0), 1.0, mat3))
 
-    return HittableList(objects...)
-end
-
+    # Testing
+    return BVHWorld(BVHNode(0.0, 1.0, objects), RGB(0.7, 0.8, 1.0))
 end
