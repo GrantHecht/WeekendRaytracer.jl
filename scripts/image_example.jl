@@ -10,22 +10,28 @@ using JET
 
 function main()
     # Image
-    image = Image(aspect_ratio      = 16 / 9, 
-                  width             = 400, 
-                  samples_per_pixel = 100,
+    image = Image(aspect_ratio      = 1.0, 
+                  width             = 600, 
+                  samples_per_pixel = 400,
                   max_depth         = 50)
 
     # World
-    world = random_scene()
+    #world = random_scene()
+    #world = two_spheres()
+    #world = two_perlin_spheres()
+    #world = not_so_pale_blue_dot()
+    #world = simple_light()
+    world = cornel_box()
 
     # Camera
-    lookfrom    = SVector(13.0,2.0,3.0)
-    lookat      = SVector(0.0,0.0,0.0)
+    lookfrom    = SVector(278.0,278.0,-800.0)
+    lookat      = SVector(278.0,278.0,0.0)
     vup         = SVector(0.0,1.0,0.0)
     dist_to_foc = 10.0
     aperture    = 0.1
-    cam = Camera(lookfrom,lookat,vup,20.0,image.aspect_ratio,aperture,dist_to_foc;
-                 time0 = 0.0, time1 = 0.01)
+    vfov        = 40.0
+    cam = Camera(lookfrom,lookat,vup,vfov,image.aspect_ratio,aperture,dist_to_foc;
+                 time0 = 0.0, time1 = 0.0)
 
     # Shoot image
     shoot!(image, cam, world; threaded = true)

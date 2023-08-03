@@ -121,12 +121,13 @@ function get_uv(s::Sphere, p)
     return u, v
 end
 
-# Define scatter method
+# Define fire_ray methods
 function fire_ray(ray_in::Ray, s::Sphere, t_min, t_max)
     hflag, rec  = hit(ray_in, s, t_min, t_max)
     t_hit       = rec.t
     sflag, scattered, attenuation = scatter(ray_in, rec)
-    return hflag, sflag, t_hit, scattered, attenuation
+    emitted     = emit(rec) 
+    return hflag, sflag, t_hit, scattered, attenuation, emitted
 end
 
 # Define ray_color method

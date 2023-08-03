@@ -54,3 +54,58 @@ function random_scene()
     # Testing
     return BVHWorld(BVHNode(0.0, 1.0, objects), RGB(0.7, 0.8, 1.0))
 end
+
+function two_spheres()
+    checker = CheckerTexture(RGB(0.2, 0.3, 0.1), RGB(0.9, 0.9, 0.9))
+    s1 = Sphere(SVector(0.0, -10.0, 0.0), 10.0, Lambertian(checker))
+    s2 = Sphere(SVector(0.0,  10.0, 0.0), 10.0, Lambertian(checker))
+    return BVHWorld(BVHNode(0.0, 0.0, [s1, s2]), RGB(0.7, 0.8, 1.0))
+end
+
+function two_perlin_spheres()
+    pertext = NoiseTexture(4)
+    s1 = Sphere(SVector(0.0, -1000.0, 0.0), 1000.0, Lambertian(pertext))
+    s2 = Sphere(SVector(0.0, 2.0, 0.0), 2.0, Lambertian(pertext))
+    return BVHWorld(BVHNode(0.0, 0.0, [s1, s2]), RGB(0.7, 0.8, 1.0))
+end
+
+function not_so_pale_blue_dot() 
+    earth_texture = ImageTexture(earth)
+    earth_surface = Lambertian(earth_texture)
+    globe         = Sphere(SVector(0.0, 0.0, 0.0), 2.0, earth_surface)
+    return BVHWorld(BVHNode(0.0, 0.0, [globe]), RGB(0.7, 0.8, 1.0))
+end
+
+function simple_light()
+    pertext = NoiseTexture(4)
+    o1      = Sphere(SVector(0.0, -1000.0, 0.0), 1000.0, Lambertian(pertext))
+    o2      = Sphere(SVector(0.0, 2.0, 0.0), 2.0, Lambertian(pertext))
+    light   = DiffuseLight(RGB(1.0, 1.0, 1.0))
+    o3      = XYRectangle(3.0, 5.0, 1.0, 3.0, -2.0, light)
+    return BVHWorld(BVHNode(0.0, 0.0, [o1,o2,o3]), RGB(0.0, 0.0, 0.0))
+end
+
+function cornel_box()
+    # Define colors
+    red     = Lambertian(RGB(0.65, 0.05, 0.05))
+    white   = Lambertian(RGB(0.73, 0.73, 0.73))
+    green   = Lambertian(RGB(0.12, 0.45, 0.15))
+    light   = DiffuseLight(RGB(15.0, 15.0, 15.0))
+
+    # Define world
+    world = BVHWorld(
+                BVHNode(0.0, 0.0, [
+                    YZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, green),
+                    YZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, red),
+                    XZRectangle(213.0, 343.0, 227.0, 332.0, 554.0, light),
+                    XZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, white),
+                    XZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
+                    XYRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
+                    Box(SVector(130.0, 0.0, 65.0), SVector(295.0, 165.0, 230.0), white),
+                    Box(SVector(265.0, 0.0, 295.0), SVector(430.0, 330.0, 460.0), white)
+                    ]
+                ), 
+                RGB(0.0, 0.0, 0.0)
+            )
+    return world
+end

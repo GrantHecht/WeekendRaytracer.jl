@@ -18,7 +18,8 @@ function ray_color(ray::Ray, w::BVHWorld, depth)
     end
 
     # Call fire_ray
-    hflag, sflag, t, scattered, attenuation = fire_ray(ray, w.top_node, 0.001, Inf)
+    hflag, sflag, t, scattered, attenuation, emitted = 
+        fire_ray(ray, w.top_node, 0.001, Inf)
     if !hflag
         return w.background
     end
@@ -26,10 +27,10 @@ function ray_color(ray::Ray, w::BVHWorld, depth)
     if sflag 
         new_color = ray_color(scattered, w, depth - 1)
 
-        return RGB(attenuation.r * new_color.r,
-                   attenuation.g * new_color.g,
-                   attenuation.b * new_color.b)
+        return RGB(emitted.r + attenuation.r * new_color.r,
+                   emitted.g + attenuation.g * new_color.g,
+                   emitted.b + attenuation.b * new_color.b)
     else
-        return RGB(0.0, 0.0, 0.0)
+        return emitted
     end
 end
