@@ -5,19 +5,24 @@ export Image, shoot!, save
 export Camera
 
 # Hittables
-export Sphere, HittableList
+export Sphere, HittableList, BVHNode
 
 # Materials
 export Lambertian, Dielectric, Metal
 
+# Textures
+export SolidTexture, CheckerTexture, NoiseTexture, ImageTexture
+
 # World generation
-export WorldGeneration
+export random_scene, two_spheres, two_perlin_spheres
+export not_so_pale_blue_dot, simple_light, cornel_box
 
 using StaticArrays
 using LinearAlgebra
 using Images
 using Reexport
 using FileIO
+import Base.min, Base.show
 
 # Inalude abstract types to avoid circular dependencies
 include("AbstractTypes.jl")
@@ -35,19 +40,33 @@ include("Camera.jl")
 include("HitRecord.jl")
 
 # Material
-include("Material.jl")
+include("Material/AbstractMaterial.jl")
+include("Material/Lambertian.jl")
+include("Material/Dielectric.jl")
+include("Material/Metal.jl")
+include("Material/DiffuseLight.jl")
+# Depreciated
+#include("Material/MaterialInfo.jl")
+#include("Material.jl")
 
-# The following are depreciated
-#include("Material/AbstractMaterial.jl")
-#include("Material/Lambertian.jl")
-#include("Material/Dielectric.jl")
-#include("Material/Metal.jl")
+# Texture
+include("Texture/Texture.jl")
+include("Texture/SolidColor.jl")
+include("Texture/CheckerTexture.jl")
+include("Texture/NoiseTexture.jl")
+include("Texture/ImageTexture.jl")
 
 # Hittable (Objects that can be hit by a Ray)
 include("Hittable/Hittable.jl")
+include("Hittable/AxisAlignedBoundingBox.jl")
 include("Hittable/Sphere.jl")
-include("Hittable/HittableList.jl")
+include("Hittable/Rectangle.jl")
+include("Hittable/BVHNode.jl")
+include("Hittable/Box.jl")
+include("Hittable/BVHWorld.jl")
 include("Hittable/WorldGeneration.jl")
+# Depreciated
+#include("Hittable/HittableList.jl")
 
 # Image
 include("Image.jl")

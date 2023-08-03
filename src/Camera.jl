@@ -17,10 +17,15 @@ struct Camera{T <: AbstractArray, U <: AbstractFloat}
 
     # Camera lense radius
     lens_radius        ::U
+
+    # Shutter time
+    time0              ::U
+    time1              ::U
 end
 
 # Constructor
-function Camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist)
+function Camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist; 
+                time0 = 0.0, time1 = 0.0)
     theta           = deg2rad(vfov)
     h               = tan(0.5 * theta)
     viewport_height = 2.0 * h
@@ -41,7 +46,7 @@ function Camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist)
     vertical        = focus_dist * viewport_height * v
     lower_left_corner = origin - 0.5 * horizontal - 0.5 * vertical - focus_dist * w
     lens_radius     = 0.5 * aperture
-    return Camera(origin, lower_left_corner, horizontal, vertical, u, v, w, lens_radius)
+    return Camera(origin, lower_left_corner, horizontal, vertical, u, v, w, lens_radius, time0, time1)
 end
 
 # Function to get ray
@@ -54,5 +59,6 @@ function get_ray(cam::Camera, s::T, t::T)  where {T <: AbstractFloat}
     origin  = SVector(cam.origin[1] + offset[1],
                       cam.origin[2] + offset[2],
                       cam.origin[3] + offset[3])
-    return Ray(origin, cam.lower_left_corner + s*cam.horizontal + t*cam.vertical - cam.origin - offset)
+    return Ray(origin, cam.lower_left_corner + s*cam.horizontal + t*cam.vertical - cam.origin - offset,
+               cam.time0 + (cam.time1 - cam.time0)*rand())
 end

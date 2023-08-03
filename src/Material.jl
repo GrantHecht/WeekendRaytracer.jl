@@ -5,7 +5,7 @@
 end
 
 # Define material struct
-struct Material{T,U} <: AbstractMaterial
+struct Material{T <: Union{AbstractTexture,RGB}, U} <: AbstractMaterial
     # Material type
     type::MaterialType
 
@@ -21,11 +21,13 @@ end
 
 # Lambertian constructor
 Lambertian(albedo_r::T, albedo_g::T, albedo_b::T) where {T} = 
-    Material(lambertian, RGB(albedo_r, albedo_g, albedo_b), T(0.0), T(0.0))
+    Material(lambertian, SolidColor(albedo_r, albedo_g, albedo_b), T(0.0), T(0.0))
 Lambertian(albedo::AbstractArray{T}) where {T} = 
-    Material(lambertian, RGB(albedo[1], albedo[2], albedo[3]), T(0.0), T(0.0))
+    Material(lambertian, SolidColor(albedo[1], albedo[2], albedo[3]), T(0.0), T(0.0))
 Lambertian(albedo::RGB{T}) where {T} = 
-    Material(lambertian, albedo, T(0.0), T(0.0))
+    Material(lambertian, SolidColor(albedo), T(0.0), T(0.0))
+Lambertian(albedo::AbstractTexture) = 
+    Material(lambertian, albedo, 0.0, 0.0)
 
 # Dielectric constructor
 Dielectric(ir::T) where {T} = 
@@ -66,8 +68,8 @@ function lambertian_scatter(ray_in::Ray, rec::HitRecord{R,U,M}) where {R,U,M}
     end
 
     # Return bool indicating ray was scattered, the scattered ray, and attenuation
-    scattered   = Ray(SVector(rec.p...), scatter_direction)
-    attenuation = rec.mat.albedo
+    scattered   = Ray(SVector(rec.p...), scatter_direction, time(ray_in))
+    attenuation = value(rec.mat.albedo, rec.u, rec.v, rec.p)
     flag        = true
     return flag, scattered, attenuation
 end
@@ -94,7 +96,7 @@ function dielectric_scatter(ray_in::Ray, rec::HitRecord)
                        refract(unit_dir, rec.normal, refraction_ratio)
 
     # Compute scattered ray
-    scattered   = Ray(SVector(rec.p...), direction)
+    scattered   = Ray(SVector(rec.p...), direction, time(ray_in))
     attenuation = rec.mat.albedo
     flag        = true
     return flag, scattered, attenuation
@@ -111,7 +113,7 @@ function metal_scatter(ray_in::Ray, rec::HitRecord{R,U,M}) where {R,U,M}
     
     # Return bool indicating ray was scattered, the scattered ray, and attenuation
     rng_ref     = reflected + rec.mat.fuzz*random_in_unit_sphere(U)
-    scattered   = Ray(SVector(rec.p...), rng_ref)
+    scattered   = Ray(SVector(rec.p...), rng_ref, time(ray_in))
     attenuation = rec.mat.albedo
     flag        = dot(scattered.dir, rec.normal) > 0
     return flag, scattered, attenuation

@@ -131,3 +131,39 @@ function random_unit_vector!(vec::AbstractVector{T}) where {T <: AbstractFloat}
     vec[3] *= invNvec
     return nothing
 end
+
+# Trilinear interpolation
+function trilinear_interp(c, u, v, w)
+    accum = 0.0
+    for i = 0:1
+        for j = 0:1
+            for k = 0:1
+                accum += (i*u + (1 - i)*(1 - u)) * 
+                         (j*v + (1 - j)*(1 - v)) * 
+                         (k*w + (1 - k)*(1 - w)) * 
+                         c[i + 1,j + 1,k + 1]
+            end
+        end
+    end
+    return accum
+end
+
+# Perlin interpolation
+function perlin_interp(c, u, v, w)
+    uu = u*u*(3.0 - 2.0*u)
+    vv = v*v*(3.0 - 2.0*v)
+    ww = w*w*(3.0 - 2.0*w)
+    accum = 0.0
+    @inbounds for i = 0:1
+        for j = 0:1
+            for k = 0:1
+                weight_v = SVector(u - i, v - j, w - k)
+                accum += (i*uu + (1 - i)*(1 - uu)) *
+                         (j*vv + (1 - j)*(1 - vv)) *
+                         (k*ww + (1 - k)*(1 - ww)) *
+                         dot(c[i + 1,j + 1,k + 1], weight_v)
+            end
+        end
+    end
+    return accum
+end

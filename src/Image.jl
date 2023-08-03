@@ -51,6 +51,7 @@ function get_pixel_color(image::Image{FT,IT,PT}, camera::Camera, world::Abstract
 
         # Update color
         pixel_color = ray_color(r, world, image.max_depth)
+
         pr += pixel_color.r
         pg += pixel_color.g
         pb += pixel_color.b
