@@ -14,9 +14,11 @@ function scatter(ray_in::Ray, rec::HitRecord{T,U,M}) where {T,U,M <: Dielectric}
 
     # Compute ray unit direction
     invNdir  = 1.0 / norm(ray_in.dir)
-    unit_dir = SVector(invNdir*ray_in.dir[1],
-                       invNdir*ray_in.dir[2],
-                       invNdir*ray_in.dir[3])
+    unit_dir = SA[
+        invNdir*ray_in.dir[1],
+        invNdir*ray_in.dir[2],
+        invNdir*ray_in.dir[3],
+    ]
 
     # Compute if we can refract
     cos_theta       = min(dot(-unit_dir, rec.normal), 1.0)
@@ -25,11 +27,11 @@ function scatter(ray_in::Ray, rec::HitRecord{T,U,M}) where {T,U,M <: Dielectric}
 
     # Compute ray direction
     flag      = (cannot_refract || reflectance(cos_theta, refraction_ratio) > rand())
-    direction = flag ? reflect(unit_dir, rec.normal) : 
+    direction = flag ? reflect(unit_dir, rec.normal) :
                        refract(unit_dir, rec.normal, refraction_ratio)
 
     # Compute scattered ray
-    scattered = Ray(SVector(rec.p...), direction, time(ray_in))
+    scattered = Ray(SA[rec.p[1], rec.p[2], rec.p[3]], direction, time(ray_in))
     flag      = true
     return flag, scattered, attenuation
 end

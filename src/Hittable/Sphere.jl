@@ -1,8 +1,8 @@
 
-struct Sphere{T <: AbstractArray, 
-              U <: AbstractFloat, 
+struct Sphere{T <: AbstractArray,
+              U <: AbstractFloat,
               M <: AbstractMaterial} <: HittableObject
-    center0 ::T 
+    center0 ::T
     center1 ::T
     time0   ::U
     time1   ::U
@@ -22,41 +22,56 @@ function center(s::Sphere, t)
         return s.center1
     end
     sf = (t - s.time0) / (s.time1 - s.time0)
-    cd = SVector(s.center1[1] - s.center0[1],
-                 s.center1[2] - s.center0[2],
-                 s.center1[3] - s.center0[3])
-    c  = SVector(s.center0[1] + sf*cd[1],
-                 s.center0[2] + sf*cd[2],
-                 s.center0[3] + sf*cd[3])
-    return c
+    cd = SA[
+        s.center1[1] - s.center0[1],
+        s.center1[2] - s.center0[2],
+        s.center1[3] - s.center0[3],
+    ]
+    return SA[
+        s.center0[1] + sf*cd[1],
+        s.center0[2] + sf*cd[2],
+        s.center0[3] + sf*cd[3],
+    ]
 end
 
 # Define bounding box method
 function bounding_box(s::Sphere, time0, time1)
     if s.time0 == s.time1
-        min = SVector(s.center0[1] - s.radius,
-                      s.center0[2] - s.radius,
-                      s.center0[3] - s.radius)
-        max = SVector(s.center0[1] + s.radius,
-                      s.center0[2] + s.radius,
-                      s.center0[3] + s.radius)
+        min = SA[
+            s.center0[1] - s.radius,
+            s.center0[2] - s.radius,
+            s.center0[3] - s.radius,
+        ]
+        max = SA[
+            s.center0[1] + s.radius,
+            s.center0[2] + s.radius,
+            s.center0[3] + s.radius,
+        ]
         return AxisAlignedBoundingBox(min,max)
     end
     b0 = AxisAlignedBoundingBox(
-        SVector(s.center0[1] - s.radius,
-                s.center0[2] - s.radius,
-                s.center0[3] - s.radius),
-        SVector(s.center0[1] + s.radius,
-                s.center0[2] + s.radius,
-                s.center0[3] + s.radius)
+        SA[
+            s.center0[1] - s.radius,
+            s.center0[2] - s.radius,
+            s.center0[3] - s.radius,
+        ],
+        SA[
+            s.center0[1] + s.radius,
+            s.center0[2] + s.radius,
+            s.center0[3] + s.radius,
+        ]
     )
     b1 = AxisAlignedBoundingBox(
-        SVector(s.center1[1] - s.radius,
-                s.center1[2] - s.radius,
-                s.center1[3] - s.radius),
-        SVector(s.center1[1] + s.radius,
-                s.center1[2] + s.radius,
-                s.center1[3] + s.radius)
+        SA[
+            s.center1[1] - s.radius,
+            s.center1[2] - s.radius,
+            s.center1[3] - s.radius,
+        ],
+        SA[
+            s.center1[1] + s.radius,
+            s.center1[2] + s.radius,
+            s.center1[3] + s.radius,
+        ]
     )
     return surrounding_box(b0, b1)
 end
@@ -65,11 +80,9 @@ end
 function hit(ray::Ray, s::Sphere, t_min, t_max)
     # Compute vector pointing from center of sphere to ray origin
     cn = center(s, time(ray))
-    oc = SVector(ray.orig[1] - cn[1],
-                 ray.orig[2] - cn[2],
-                 ray.orig[3] - cn[3])
+    oc = SA[ray.orig[1] - cn[1], ray.orig[2] - cn[2], ray.orig[3] - cn[3]]
 
-    # Compute a 
+    # Compute a
     a   = dot(ray.dir, ray.dir)
 
     # Compute b / 2
@@ -81,9 +94,9 @@ function hit(ray::Ray, s::Sphere, t_min, t_max)
     # Compute discriminant
     d   = hb*hb - a*c
 
-    # Return t for first contact with sphere 
+    # Return t for first contact with sphere
     if d < 0
-        rec = HitRecord(SVector(0.0,0.0,0.0), SVector(0.0,0.0,0.0), -1.0, 0.0, 0.0, s.mat, true)
+        rec = HitRecord(SA[0.0,0.0,0.0], SA[0.0,0.0,0.0], -1.0, 0.0, 0.0, s.mat, true)
         return false, rec
     else
         sqrtd = sqrt(d)
@@ -91,7 +104,7 @@ function hit(ray::Ray, s::Sphere, t_min, t_max)
         # Find the nearest root that lies in the acceptable range
         root = (-hb - sqrtd) / a
         if (root < t_min || t_max < root)
-            rec = HitRecord(SVector(0.0,0.0,0.0), SVector(0.0,0.0,0.0), -1.0, 0.0, 0.0, s.mat, true)
+            rec = HitRecord(SA[0.0,0.0,0.0], SA[0.0,0.0,0.0], -1.0, 0.0, 0.0, s.mat, true)
             return false, rec
         end
 
@@ -99,9 +112,7 @@ function hit(ray::Ray, s::Sphere, t_min, t_max)
         ir          = 1.0 / s.radius
         t           = root
         p           = at(ray, t)
-        on          = SVector(ir*(p[1] - cn[1]),
-                              ir*(p[2] - cn[2]),
-                              ir*(p[3] - cn[3]))
+        on          = SA[ir*(p[1] - cn[1]), ir*(p[2] - cn[2]), ir*(p[3] - cn[3])]
         front_face  = dot(ray.dir, on) < 0
         normal      = front_face ? on : -on
         u, v        = get_uv(s, on)
@@ -126,7 +137,7 @@ function fire_ray(ray_in::Ray, s::Sphere, t_min, t_max)
     hflag, rec  = hit(ray_in, s, t_min, t_max)
     t_hit       = rec.t
     sflag, scattered, attenuation = scatter(ray_in, rec)
-    emitted     = emit(rec) 
+    emitted     = emit(rec)
     return hflag, sflag, t_hit, scattered, attenuation, emitted
 end
 

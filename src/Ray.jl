@@ -10,4 +10,7 @@ end
 time(ray::Ray) = ray.tm
 
 # Define fuction for computing location of ray
-at(ray::Ray, t) = ray.orig + t*ray.dir
+function at(ray::Ray{T}, t) where T
+    Tt = eltype(T)
+    return ray.orig + Tt(t)*ray.dir
+end

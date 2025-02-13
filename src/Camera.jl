@@ -24,8 +24,11 @@ struct Camera{T <: AbstractArray, U <: AbstractFloat}
 end
 
 # Constructor
-function Camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist; 
-                time0 = 0.0, time1 = 0.0)
+function Camera(
+    lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist;
+    time0 = 0.0,
+    time1 = 0.0,
+)
     theta           = deg2rad(vfov)
     h               = tan(0.5 * theta)
     viewport_height = 2.0 * h
@@ -37,9 +40,9 @@ function Camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, focus_dist;
     invNwvec        = 1.0 / norm(wvec)
     invNuvec        = 1.0 / norm(uvec)
     invNvvec        = 1.0 / norm(vvec)
-    w               = SVector(invNwvec*wvec[1], invNwvec*wvec[2], invNwvec*wvec[3])
-    u               = SVector(invNuvec*uvec[1], invNuvec*uvec[2], invNuvec*uvec[3])
-    v               = SVector(invNvvec*vvec[1], invNvvec*vvec[2], invNvvec*vvec[3])
+    w               = SA[invNwvec*wvec[1], invNwvec*wvec[2], invNwvec*wvec[3]]
+    u               = SA[invNuvec*uvec[1], invNuvec*uvec[2], invNuvec*uvec[3]]
+    v               = SA[invNvvec*vvec[1], invNvvec*vvec[2], invNvvec*vvec[3]]
 
     origin          = lookfrom
     horizontal      = focus_dist * viewport_width * u
@@ -52,13 +55,11 @@ end
 # Function to get ray
 function get_ray(cam::Camera, s::T, t::T)  where {T <: AbstractFloat}
     unit    = random_in_unit_disk(T)
-    rd      = SVector(cam.lens_radius*unit[1], cam.lens_radius*unit[2])
-    offset  = SVector(cam.u[1]*rd[1] + cam.v[1]*rd[2],
-                      cam.u[2]*rd[1] + cam.v[2]*rd[2],
-                      0.0)
-    origin  = SVector(cam.origin[1] + offset[1],
-                      cam.origin[2] + offset[2],
-                      cam.origin[3] + offset[3])
-    return Ray(origin, cam.lower_left_corner + s*cam.horizontal + t*cam.vertical - cam.origin - offset,
-               cam.time0 + (cam.time1 - cam.time0)*rand())
+    rd      = SA[cam.lens_radius*unit[1], cam.lens_radius*unit[2]]
+    offset  = SA[cam.u[1]*rd[1] + cam.v[1]*rd[2], cam.u[2]*rd[1] + cam.v[2]*rd[2], 0.0]
+
+    origin  = SA[cam.origin[1] + offset[1], cam.origin[2] + offset[2], cam.origin[3] + offset[3]]
+    dir     = cam.lower_left_corner + s*cam.horizontal + t*cam.vertical - cam.origin - offset
+    tm      = cam.time0 + (cam.time1 - cam.time0)*rand()
+    return Ray(origin, dir, tm)
 end

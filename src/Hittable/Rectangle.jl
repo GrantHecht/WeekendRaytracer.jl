@@ -61,17 +61,17 @@ end
 function hit(ray::Ray, r::XYRectangle, t_min, t_max)
     t = (r.k - ray.orig[3]) / ray.dir[3]
     if t < t_min || t > t_max
-        return false, HitRecord(SVector(0.0,0.0,0.0), SVector(0.0,0.0,0.0), -1.0, 0.0, 0.0, r.mat, true)
+        return false, HitRecord(SA[0.0,0.0,0.0], SA[0.0,0.0,0.0], -1.0, 0.0, 0.0, r.mat, true)
     end
     x = ray.orig[1] + t*ray.dir[1]
     y = ray.orig[2] + t*ray.dir[2]
     if x < r.x0 || x > r.x1 || y < r.y0 || y > r.y1
-        return false, HitRecord(SVector(0.0,0.0,0.0), SVector(0.0,0.0,0.0), -1.0, 0.0, 0.0, r.mat, true)
+        return false, HitRecord(SA[0.0,0.0,0.0], SA[0.0,0.0,0.0], -1.0, 0.0, 0.0, r.mat, true)
     end
     u           = (x - r.x0) / (r.x1 - r.x0)
     v           = (y - r.y0) / (r.y1 - r.y0)
     p           = at(ray, t)
-    on          = SVector(0.0, 0.0, 1.0)
+    on          = SA[0.0, 0.0, 1.0]
     front_face  = dot(ray.dir, on) < 0.0
     normal      = front_face ? on : -on
     rec         = HitRecord(p, normal, t, u, v, r.mat, front_face)
@@ -80,17 +80,17 @@ end
 function hit(ray::Ray, r::XZRectangle, t_min, t_max)
     t = (r.k - ray.orig[2]) / ray.dir[2]
     if t < t_min || t > t_max
-        return false, HitRecord(SVector(0.0,0.0,0.0), SVector(0.0,0.0,0.0), -1.0, 0.0, 0.0, r.mat, true)
+        return false, HitRecord(SA[0.0,0.0,0.0], SA[0.0,0.0,0.0], -1.0, 0.0, 0.0, r.mat, true)
     end
     x = ray.orig[1] + t*ray.dir[1]
     z = ray.orig[3] + t*ray.dir[3]
     if x < r.x0 || x > r.x1 || z < r.z0 || z > r.z1
-        return false, HitRecord(SVector(0.0,0.0,0.0), SVector(0.0,0.0,0.0), -1.0, 0.0, 0.0, r.mat, true)
+        return false, HitRecord(SA[0.0,0.0,0.0], SA[0.0,0.0,0.0], -1.0, 0.0, 0.0, r.mat, true)
     end
     u           = (x - r.x0) / (r.x1 - r.x0)
     v           = (z - r.z0) / (r.z1 - r.z0)
     p           = at(ray, t)
-    on          = SVector(0.0, 1.0, 0.0)
+    on          = SA[0.0, 1.0, 0.0]
     front_face  = dot(ray.dir, on) < 0.0
     normal      = front_face ? on : -on
     rec         = HitRecord(p, normal, t, u, v, r.mat, front_face)
@@ -99,17 +99,17 @@ end
 function hit(ray::Ray, r::YZRectangle, t_min, t_max)
     t = (r.k - ray.orig[1]) / ray.dir[1]
     if t < t_min || t > t_max
-        return false, HitRecord(SVector(0.0,0.0,0.0), SVector(0.0,0.0,0.0), -1.0, 0.0, 0.0, r.mat, true)
+        return false, HitRecord(SA[0.0,0.0,0.0], SA[0.0,0.0,0.0], -1.0, 0.0, 0.0, r.mat, true)
     end
     y = ray.orig[2] + t*ray.dir[2]
     z = ray.orig[3] + t*ray.dir[3]
     if y < r.y0 || y > r.y1 || z < r.z0 || z > r.z1
-        return false, HitRecord(SVector(0.0,0.0,0.0), SVector(0.0,0.0,0.0), -1.0, 0.0, 0.0, r.mat, true)
+        return false, HitRecord(SA[0.0,0.0,0.0], SA[0.0,0.0,0.0], -1.0, 0.0, 0.0, r.mat, true)
     end
     u           = (y - r.y0) / (r.y1 - r.y0)
     v           = (z - r.z0) / (r.z1 - r.z0)
     p           = at(ray, t)
-    on          = SVector(1.0, 0.0, 0.0)
+    on          = SA[1.0, 0.0, 0.0]
     front_face  = dot(ray.dir, on) < 0.0
     normal      = front_face ? on : -on
     rec         = HitRecord(p, normal, t, u, v, r.mat, front_face)

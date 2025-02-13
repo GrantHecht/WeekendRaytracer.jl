@@ -20,14 +20,16 @@ end
 function scatter(ray_in::Ray, rec::HitRecord{T,U,M}) where {T,U,M <: Metal}
     # Compute reflected ray direction
     invNdir     = 1.0 / norm(ray_in.dir)
-    unit_dir    = SVector(invNdir*ray_in.dir[1],
-                          invNdir*ray_in.dir[2],
-                          invNdir*ray_in.dir[3])
+    unit_dir    = SA[
+        invNdir*ray_in.dir[1],
+        invNdir*ray_in.dir[2],
+        invNdir*ray_in.dir[3],
+    ]
     reflected   = reflect(unit_dir, rec.normal)
-    
+
     # Return bool indicating ray was scattered, the scattered ray, and attenuation
     rng_ref     = reflected + rec.mat.fuzz*random_in_unit_sphere(U)
-    scattered   = Ray(SVector(rec.p...), rng_ref, time(ray_in))
+    scattered   = Ray(SA[rec.p[1], rec.p[2], rec.p[3]], rng_ref, time(ray_in))
     attenuation = rec.mat.albedo
     flag        = dot(scattered.dir, rec.normal) > 0
     return flag, scattered, attenuation

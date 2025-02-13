@@ -15,11 +15,12 @@ export SolidTexture, CheckerTexture, NoiseTexture, ImageTexture
 
 # World generation
 export random_scene, two_spheres, two_perlin_spheres
-export not_so_pale_blue_dot, simple_light, cornel_box
+export not_so_pale_blue_dot, simple_light, cornel_box, cornel_smoke
 
 using StaticArrays
 using LinearAlgebra
 using Images
+using Match
 using Reexport
 using FileIO
 import Base.min, Base.show
@@ -44,10 +45,8 @@ include("Material/AbstractMaterial.jl")
 include("Material/Lambertian.jl")
 include("Material/Dielectric.jl")
 include("Material/Metal.jl")
+include("Material/Isotropic.jl")
 include("Material/DiffuseLight.jl")
-# Depreciated
-#include("Material/MaterialInfo.jl")
-#include("Material.jl")
 
 # Texture
 include("Texture/Texture.jl")
@@ -63,10 +62,11 @@ include("Hittable/Sphere.jl")
 include("Hittable/Rectangle.jl")
 include("Hittable/BVHNode.jl")
 include("Hittable/Box.jl")
+include("Hittable/ConstantMedium.jl")
+include("Hittable/Translate.jl")
+include("Hittable/Rotate.jl")
 include("Hittable/BVHWorld.jl")
 include("Hittable/WorldGeneration.jl")
-# Depreciated
-#include("Hittable/HittableList.jl")
 
 # Image
 include("Image.jl")

@@ -4,6 +4,24 @@ struct AxisAlignedBoundingBox{T} <: BoundingBox
     max::T
 end
 
+# Translate method through summation
+function Base.:+(box::AxisAlignedBoundingBox, offset::T) where {T}
+    new_min = SA[
+        box.min[1] + offset[1],
+        box.min[2] + offset[2],
+        box.min[3] + offset[3]
+    ]
+    new_max = SA[
+        box.max[1] + offset[1],
+        box.max[2] + offset[2],
+        box.max[3] + offset[3]
+    ]
+    return AxisAlignedBoundingBox(new_min,new_max)
+end
+function Base.:+(offset::T, box::AxisAlignedBoundingBox) where {T}
+    return box + offset
+end
+
 # Surrounding box method
 function surrounding_box(box0::AxisAlignedBoundingBox, box1::AxisAlignedBoundingBox)
     small = SVector(min(box0.min[1], box1.min[1]),

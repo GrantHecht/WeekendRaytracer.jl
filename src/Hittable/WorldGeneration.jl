@@ -3,7 +3,7 @@
 # See https://raytracing.github.io/books/RayTracingInOneWeekend.html
 function random_scene()
     # Create emplty vector for accumulatng objects
-    # This won't be type stable but we'll be able to construct 
+    # This won't be type stable but we'll be able to construct
     # a definite type HittableList at the end
     objects = []
 
@@ -69,7 +69,7 @@ function two_perlin_spheres()
     return BVHWorld(BVHNode(0.0, 0.0, [s1, s2]), RGB(0.7, 0.8, 1.0))
 end
 
-function not_so_pale_blue_dot() 
+function not_so_pale_blue_dot()
     earth_texture = ImageTexture(earth)
     earth_surface = Lambertian(earth_texture)
     globe         = Sphere(SVector(0.0, 0.0, 0.0), 2.0, earth_surface)
@@ -94,18 +94,97 @@ function cornel_box()
 
     # Define world
     world = BVHWorld(
-                BVHNode(0.0, 0.0, [
-                    YZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, green),
-                    YZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, red),
-                    XZRectangle(213.0, 343.0, 227.0, 332.0, 554.0, light),
-                    XZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, white),
-                    XZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
-                    XYRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
-                    Box(SVector(130.0, 0.0, 65.0), SVector(295.0, 165.0, 230.0), white),
-                    Box(SVector(265.0, 0.0, 295.0), SVector(430.0, 330.0, 460.0), white)
-                    ]
-                ), 
+                BVHNode(
+                    0.0, 0.0,
+                    [
+                        YZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, green),
+                        YZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, red),
+                        XZRectangle(213.0, 343.0, 227.0, 332.0, 554.0, light),
+                        XZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, white),
+                        XZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
+                        XYRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
+                        Translate(
+                            RotateY(
+                                Box(SA[0.0, 0.0, 0.0], SA[165.0, 330.0, 165.0], white),
+                                15.0,
+                            ),
+                            SA[265.0, 0.0, 295.0],
+                        ),
+                        Translate(
+                            RotateY(
+                                Box(SA[0.0, 0.0, 0.0], SA[165.0, 165.0, 165.0], white),
+                                -18.0,
+                            ),
+                            SA[130.0, 0.0, 65.0],
+                        )
+                    ],
+                ),
                 RGB(0.0, 0.0, 0.0)
             )
     return world
+end
+
+function cornel_smoke()
+    # Define colors
+    red     = Lambertian(RGB(0.65, 0.05, 0.05))
+    white   = Lambertian(RGB(0.73, 0.73, 0.73))
+    green   = Lambertian(RGB(0.12, 0.45, 0.15))
+    light   = DiffuseLight(RGB(15.0, 15.0, 15.0))
+
+    # Define world
+    world = BVHWorld(
+                BVHNode(
+                    0.0, 0.0,
+                    [
+                        YZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, green),
+                        YZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, red),
+                        XZRectangle(213.0, 343.0, 227.0, 332.0, 554.0, light),
+                        XZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, white),
+                        XZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
+                        XYRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
+                        Translate(
+                            RotateY(
+                                ConstantMediumBox(SA[0.0, 0.0, 0.0], SA[165.0, 330.0, 165.0], 0.01, SolidColor(RGB(1.0,1.0,1.0))),
+                                15.0,
+                            ),
+                            SA[265.0, 0.0, 295.0],
+                        ),
+                        Translate(
+                            RotateY(
+                                ConstantMediumBox(SA[0.0, 0.0, 0.0], SA[165.0, 165.0, 165.0], 0.01, SolidColor(RGB(0.0,0.0,0.0))),
+                                -18.0,
+                            ),
+                            SA[130.0, 0.0, 65.0],
+                        )
+                    ],
+                ),
+                RGB(0.0, 0.0, 0.0)
+            )
+    return world
+end
+
+function final_scene()
+    # Define materials
+    ground = Lambertian(SolidColor(RGB(0.48, 0.83, 0.53)))
+
+    # Create ground objects
+    objects = []
+    boxes_per_side = 20
+    for i in 0:(boxes_per_side - 1)
+        for j in 0:(boxes_per_side - 1)
+            w   = 100.0
+            x0  = -1000.0 + i*w
+            z0  = -1000.0 + j*w
+            y0  = 0.0
+            x1  = x0 + w
+            y1  = 1.0 + 100.0*rand()
+            z1  = z0 + w
+
+            push!(objects, Box(SA[x0,y0,z0], SA[x1,y1,z1], ground))
+        end
+    end
+
+    # Create light
+    light = DiffuseLight(SolidColor(RGB(7.0, 7.0, 7.0)))
+
 end
