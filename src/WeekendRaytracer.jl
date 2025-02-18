@@ -14,9 +14,11 @@ export Lambertian, Dielectric, Metal
 export SolidTexture, CheckerTexture, NoiseTexture, ImageTexture
 
 # World generation
-export random_scene, two_spheres, two_perlin_spheres
+export random_scene, two_spheres, two_perlin_spheres, quads
 export not_so_pale_blue_dot, simple_light, cornel_box, cornel_smoke
+export final_scene
 
+using ChunkSplitters
 using StaticArrays
 using LinearAlgebra
 using Images
@@ -40,6 +42,13 @@ include("Camera.jl")
 # Include HitRecord
 include("HitRecord.jl")
 
+# Texture
+include("Texture/Texture.jl")
+include("Texture/SolidColor.jl")
+include("Texture/CheckerTexture.jl")
+include("Texture/NoiseTexture.jl")
+include("Texture/ImageTexture.jl")
+
 # Material
 include("Material/AbstractMaterial.jl")
 include("Material/Lambertian.jl")
@@ -48,23 +57,16 @@ include("Material/Metal.jl")
 include("Material/Isotropic.jl")
 include("Material/DiffuseLight.jl")
 
-# Texture
-include("Texture/Texture.jl")
-include("Texture/SolidColor.jl")
-include("Texture/CheckerTexture.jl")
-include("Texture/NoiseTexture.jl")
-include("Texture/ImageTexture.jl")
-
 # Hittable (Objects that can be hit by a Ray)
 include("Hittable/Hittable.jl")
 include("Hittable/AxisAlignedBoundingBox.jl")
 include("Hittable/Sphere.jl")
 include("Hittable/Rectangle.jl")
+include("Hittable/Quadrilateral.jl")
 include("Hittable/BVHNode.jl")
 include("Hittable/Box.jl")
 include("Hittable/ConstantMedium.jl")
-include("Hittable/Translate.jl")
-include("Hittable/Rotate.jl")
+include("Hittable/Transformations.jl")
 include("Hittable/BVHWorld.jl")
 include("Hittable/WorldGeneration.jl")
 

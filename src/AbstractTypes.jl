@@ -6,7 +6,8 @@ abstract type AbstractTexture end
 
 abstract type AbstractHittable end
 abstract type HittableObject <: AbstractHittable end
-abstract type HittableRectangle <: HittableObject end
+abstract type HittableQuadrilateral <: HittableObject end
+abstract type HittableRectangle <: HittableQuadrilateral end
 abstract type BoundingBox <: AbstractHittable end
 abstract type HittableCollection <: AbstractHittable end
 abstract type AbstractTransformation <: AbstractHittable end

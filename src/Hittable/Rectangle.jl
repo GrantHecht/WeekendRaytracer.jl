@@ -115,12 +115,3 @@ function hit(ray::Ray, r::YZRectangle, t_min, t_max)
     rec         = HitRecord(p, normal, t, u, v, r.mat, front_face)
     return true, rec
 end
-
-# Define fire_ray methods
-function fire_ray(ray_in::Ray, r::HittableRectangle, t_min, t_max)
-    hflag, rec  = hit(ray_in, r, t_min, t_max)
-    t_hit       = rec.t
-    sflag, scattered, attenuation = scatter(ray_in, rec)
-    emitted     = emit(rec)
-    return hflag, sflag, t_hit, scattered, attenuation, emitted
-end

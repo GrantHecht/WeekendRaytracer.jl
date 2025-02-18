@@ -1,64 +1,96 @@
 
-struct ConstantMediumBox{B <: Box, T} <: AbstractHittable
-    obj::B
+struct ConstantMedium{O <: AbstractHittable, T, CT} <: HittableObject
+    obj::O
     neg_inv_density::T
+    mat::Isotropic{SolidColor{RGB{CT}}}
+end
+
+function ConstantMediumSphere(center0, center1, time0, time1, r, density, albedo_r, albedo_g, albedo_b)
+    mat = Isotropic(albedo_r, albedo_g, albedo_b)
+    return ConstantMedium(
+        Sphere(center0, center1, time0, time1, r, mat),
+        1.0 / density, mat,
+    )
+end
+function ConstantMediumSphere(
+    center0, center1, time0, time1, r, density, albedo::A,
+) where {A <: Union{AbstractArray, RGB, SolidColor}}
+    mat = Isotropic(albedo)
+    return ConstantMedium(
+        Sphere(center0, center1, time0, time1, r, mat),
+        1.0 / density, mat,
+    )
+end
+ConstantMediumSphere(center,r,density,albedo_r,albedo_g,albedo_b) =
+    ConstantMediumSphere(center,center,0.0,0.0,r,density,albedo_r,albedo_g,albedo_b)
+ConstantMediumSphere(center,r,density,albedo) =
+    ConstantMediumSphere(center,center,0.0,0.0,r,density,albedo)
+function ConstantMedium(sphere::S,density,albedo_r,albedo_g,albedo_b) where {S <: Sphere}
+    return ConstantMediumSphere(
+        sphere.center0, sphere.center1,
+        sphere.time0, sphere.time1, sphere.radius,
+        density, albedo_r, albedo_g, albedo_b)
+end
+function ConstantMedium(
+    sphere::S,density,albedo::A,
+) where {S <: Sphere, A <: Union{AbstractArray, RGB, SolidColor}}
+    return ConstantMediumSphere(
+        sphere.center0, sphere.center1,
+        sphere.time0, sphere.time1, sphere.radius,
+        density, albedo)
 end
 
 function ConstantMediumBox(p0, p1, density, albedo_r, albedo_g, albedo_b)
     # Construct box
-    box = Box(p0, p1, Isotropic(albedo_r, albedo_g, albedo_b))
-    return ConstantMediumBox(box, -1.0/density)
+    mat = Isotropic(albedo_r, albedo_g, albedo_b)
+    return ConstantMedium(Box(p0, p1, mat), -1.0/density, mat)
 end
 function ConstantMediumBox(
     p0, p1, density, albedo::A,
-) where {A <: Union{AbstractArray, SolidColor}}
+) where {A <: Union{AbstractArray, RGB, SolidColor}}
     # Construct box
-    box = Box(p0, p1, Isotropic(albedo))
-    return ConstantMediumBox(box, -1.0/density)
+    mat = Isotropic(albedo)
+    return ConstantMedium(Box(p0, p1, mat), -1.0/density, mat)
 end
 
-# The following could probably be optimized a decent bit since we have to
-# essentially redo the hit check
-function fire_ray(ray_in::Ray, cmb::ConstantMediumBox, t_min, t_max)
-    # Fire rays at the box
-    hflag_1, sflag_1, t_hit_1, sray_1, attenuation_1, emitted_1 =
-        fire_ray(ray_in, cmb.obj, -Inf, Inf)
-    if !hflag_1
-        return false, false, t_hit_1, sray_1, attenuation_1, emitted_1
+# hit implementations
+function hit(ray_in::Ray, cmb::ConstantMedium{O}, t_min, t_max) where {O <: HittableObject}
+    hflag1, rec1 = hit(ray_in, cmb.obj, -Inf, Inf)
+    if !hflag1
+        return hflag1, rec1
     end
 
-    hflag_2, sflag_2, t_hit_2, sray_2, attenuation_2, emitted_2 =
-        fire_ray(ray_in, cmb.obj, t_hit_1 + 0.0001, Inf)
-    if !hflag_2
-        return false, false, t_hit_2, sray_2, attenuation_2, emitted_2
+    hflag2, rec2 = hit(ray_in, cmb.obj, rec1.t + 0.0001, Inf)
+    if !hflag2
+        return hflag2, rec2
     end
 
-    if t_hit_1 < t_min; t_hit_1 = t_min; end
-    if t_hit_2 > t_max; t_hit_2 = t_max; end
+    t_hit1 = rec1.t
+    t_hit2 = rec2.t
+    if t_hit1 < t_min; t_hit1 = t_min; end
+    if t_hit2 > t_max; t_hit2 = t_max; end
 
-    if t_hit_1 >= t_hit_2
-        return false, false, t_hit_1, sray_1, attenuation_1, emitted_1
+    if t_hit1 >= t_hit2
+        return false, rec1
     end
 
-    if t_hit_1 < 0.0; t_hit_1 = 0.0; end
+    if t_hit1 < 0.0
+        t_hit1 = 0.0
+    end
 
     ray_length = norm(ray_in.dir)
-    distance_inside_boundary = (t_hit_2 - t_hit_1) * ray_length
-    hit_distance = cmb.neg_inv_density * log(rand())
+    distance_inside_boundary = (t_hit2 - t_hit1)*ray_length
+    hit_distance = cmb.neg_inv_density*log(rand())
 
     if hit_distance > distance_inside_boundary
-        return false, false, t_hit_1, sray_1, attenuation_1, emitted_1
+        return false, rec1
     end
 
-    t_hit = t_hit_1 + hit_distance / ray_length
-    p     = at(ray_in, t_hit)
-
-    scattered   = Ray(SA[p[1],p[2],p[3]], sray_2.dir, time(ray_in))
-    attenuation = attenuation_2
-
-    return true, true, t_hit, scattered, attenuation, emitted_2
+    t_hit = t_hit1 + hit_distance / ray_length
+    p = at(ray_in, t_hit)
+    return true, HitRecord(p, SA[1.0,0.0,0.0], t_hit, 0.0, 0.0, cmb.mat, true)
 end
 
 # Define bounding box
-bounding_box(cmb::ConstantMediumBox, time0, time1) =
+bounding_box(cmb::ConstantMedium, time0, time1) =
     bounding_box(cmb.obj, time0, time1)

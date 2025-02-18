@@ -8,7 +8,7 @@ const TEXTURE_PATH = joinpath(@__DIR__, "..", "..", "textures")
 
 # Define global dictionary for mapping DefaultTexture to filename
 const DEFAULT_TEXTURE = Dict(
-    earth => joinpath(TEXTURE_PATH, "8081_earthmap4k.jpg")
+    earth => joinpath(TEXTURE_PATH, "earthmap.jpg") # "8081_earthmap4k.jpg")
 )
 
 # Define value function

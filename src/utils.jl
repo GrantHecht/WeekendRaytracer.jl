@@ -123,17 +123,17 @@ function trilinear_interp(c::AbstractArray{T}, u, v, w) where T
 end
 
 # Perlin interpolation
-function perlin_interp(c::AbstractArray{T}, u, v, w) where T
-    two = T(2.0)
-    thr = T(3.0)
+function perlin_interp(c, u, v, w)
+    two = 2.0
+    thr = 3.0
     uu = u*u*(thr - two*u)
     vv = v*v*(thr - two*v)
     ww = w*w*(thr - two*w)
-    accum = zero(T)
+    accum = 0.0
     @inbounds for i = 0:1
         for j = 0:1
             for k = 0:1
-                weight_v = SVector(u - i, v - j, w - k)
+                weight_v = SA[u - i, v - j, w - k]
                 accum += (i*uu + (1 - i)*(1 - uu)) *
                          (j*vv + (1 - j)*(1 - vv)) *
                          (k*ww + (1 - k)*(1 - ww)) *

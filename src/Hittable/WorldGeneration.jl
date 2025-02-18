@@ -93,6 +93,22 @@ function cornel_box()
     light   = DiffuseLight(RGB(15.0, 15.0, 15.0))
 
     # Define world
+    a1 = 15.0
+    a2 = -18.0
+    R1 = SA[cosd(a1) 0.0 sind(a1); 0.0 1.0 0.0; -sind(a1) 0.0 cosd(a1)]
+    R2 = SA[cosd(a2) 0.0 sind(a2); 0.0 1.0 0.0; -sind(a2) 0.0 cosd(a2)]
+    o1 = SA[265.0, 0.0, 295.0]
+    o2 = SA[130.0, 0.0, 65.0]
+
+    box1 = Transformation(
+        Box(SA[0.0, 0.0, 0.0], SA[165.0, 330.0, 165.0], white),
+        R1, o1,
+    )
+    box2 = Transformation(
+        Box(SA[0.0, 0.0, 0.0], SA[165.0, 165.0, 165.0], white),
+        R2, o2,
+    )
+
     world = BVHWorld(
                 BVHNode(
                     0.0, 0.0,
@@ -103,20 +119,7 @@ function cornel_box()
                         XZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, white),
                         XZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
                         XYRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
-                        Translate(
-                            RotateY(
-                                Box(SA[0.0, 0.0, 0.0], SA[165.0, 330.0, 165.0], white),
-                                15.0,
-                            ),
-                            SA[265.0, 0.0, 295.0],
-                        ),
-                        Translate(
-                            RotateY(
-                                Box(SA[0.0, 0.0, 0.0], SA[165.0, 165.0, 165.0], white),
-                                -18.0,
-                            ),
-                            SA[130.0, 0.0, 65.0],
-                        )
+                        box1, box2
                     ],
                 ),
                 RGB(0.0, 0.0, 0.0)
@@ -132,35 +135,60 @@ function cornel_smoke()
     light   = DiffuseLight(RGB(15.0, 15.0, 15.0))
 
     # Define world
+    a1 = 15.0
+    a2 = -18.0
+    R1 = SA[cosd(a1) 0.0 sind(a1); 0.0 1.0 0.0; -sind(a1) 0.0 cosd(a1)]
+    R2 = SA[cosd(a2) 0.0 sind(a2); 0.0 1.0 0.0; -sind(a2) 0.0 cosd(a2)]
+    o1 = SA[265.0, 0.0, 295.0]
+    o2 = SA[130.0, 0.0, 65.0]
+    box1 = Transformation(
+        ConstantMediumBox(SA[0.0, 0.0, 0.0], SA[165.0, 330.0, 165.0], 0.01, SolidColor(RGB(0.0,0.0,0.0))),
+        R1, o1,
+    )
+    box2 = Transformation(
+        ConstantMediumBox(SA[0.0, 0.0, 0.0], SA[165.0, 165.0, 165.0], 0.01, SolidColor(RGB(1.0,1.0,1.0))),
+        R2, o2,
+    )
     world = BVHWorld(
                 BVHNode(
                     0.0, 0.0,
                     [
                         YZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, green),
                         YZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, red),
-                        XZRectangle(213.0, 343.0, 227.0, 332.0, 554.0, light),
+                        Quadrilateral(SA[113.0,554.0,127.0], SA[330.0,0.0,0.0], SA[0.0,0.0,305.0], light),
                         XZRectangle(0.0, 555.0, 0.0, 555.0, 0.0, white),
                         XZRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
                         XYRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
-                        Translate(
-                            RotateY(
-                                ConstantMediumBox(SA[0.0, 0.0, 0.0], SA[165.0, 330.0, 165.0], 0.01, SolidColor(RGB(1.0,1.0,1.0))),
-                                15.0,
-                            ),
-                            SA[265.0, 0.0, 295.0],
-                        ),
-                        Translate(
-                            RotateY(
-                                ConstantMediumBox(SA[0.0, 0.0, 0.0], SA[165.0, 165.0, 165.0], 0.01, SolidColor(RGB(0.0,0.0,0.0))),
-                                -18.0,
-                            ),
-                            SA[130.0, 0.0, 65.0],
-                        )
+                        box1, box2,
                     ],
                 ),
                 RGB(0.0, 0.0, 0.0)
             )
     return world
+end
+
+function quads()
+    # Materials
+    left_red     = Lambertian(SolidColor(RGB(1.0, 0.2, 0.2)));
+    back_green   = Lambertian(SolidColor(RGB(0.2, 1.0, 0.2)));
+    right_blue   = Lambertian(SolidColor(RGB(0.2, 0.2, 1.0)));
+    upper_orange = Lambertian(SolidColor(RGB(1.0, 0.5, 0.0)));
+    lower_teal   = Lambertian(SolidColor(RGB(0.2, 0.8, 0.8)));
+
+    # Quads
+    world = BVHWorld(
+        BVHNode(
+            0.0, 0.0,
+            [
+                Quadrilateral(SA[-3.0,-2.0,5.0], SA[0.0,0.0,-4.0], SA[0.0,4.0,0.0], left_red),
+                Quadrilateral(SA[-2.0,-2.0,0.0], SA[4.0,0.0,0.0], SA[0.0,4.0,0.0], back_green),
+                Quadrilateral(SA[3.0,-2.0,1.0], SA[0.0,0.0,4.0], SA[0.0,4.0,0.0], right_blue),
+                Quadrilateral(SA[-2.0,3.0,1.0], SA[4.0,0.0,0.0], SA[0.0,0.0,4.0], upper_orange),
+                Quadrilateral(SA[-2.0,-3.0,5.0], SA[4.0,0.0,0.0], SA[0.0,0.0,-4.0], lower_teal),
+            ],
+        ),
+        RGB(0.7, 0.8, 1.0),
+    )
 end
 
 function final_scene()
@@ -186,5 +214,96 @@ function final_scene()
 
     # Create light
     light = DiffuseLight(SolidColor(RGB(7.0, 7.0, 7.0)))
+    light_obj = Quadrilateral(
+        SA[123.0,554.0,147.0], SA[300.0,0.0,0.0], SA[0.0,0.0,265.0], light,
+    )
+    push!(objects, light_obj)
 
+    # Moving sphere
+    # center1     = SA[400.0, 400.0, 200.0]
+    # center2     = center1 + SA[30.0,0.0,0.0]
+    # sphere_mat  = Lambertian(SolidColor(RGB(0.7,0.3,0.1)))
+    # sphere      = Sphere(center1,center2,0.0,0.01,50.0,sphere_mat)
+    # push!(objects, sphere)
+
+    # Glass sphere and metal spheres
+    # push!(
+    #     objects,
+    #     Sphere(
+    #         SA[260.0,150.0,45.0], 50.0,
+    #         Dielectric(1.5),
+    #     )
+    # )
+    push!(
+        objects,
+        Sphere(
+            SA[0.0,150.0,145.0], 50.0,
+            Metal(SolidColor(RGB(0.8,0.8,0.9)), 0.5)
+        )
+    )
+
+    # Boundary
+    boundary1 = Sphere(
+        SA[360.0,150.0,145.0], 70.0,
+        Dielectric(1.5),
+    )
+    # boundary2 = ConstantMediumSphere(
+    #     SA[0.0,0.0,0.0], 5000.0, 0.0001, SolidColor(RGB(1.0,1.0,1.0))
+    # )
+    # push!(objects, boundary1)
+    push!(objects, ConstantMedium(boundary1, 0.2, SolidColor(RGB(0.2,0.4,0.9))))
+    # push!(objects, boundary2)
+
+    # Earth
+    # earth_texture = ImageTexture(earth)
+    # earth_surface = Lambertian(earth_texture)
+    # push!(
+    #     objects,
+    #     Sphere(SA[400.0, 200.0, 400.0], 100.0, earth_surface)
+    # )
+
+    # Noise
+    # pertexture = NoiseTexture(0.2)
+    # push!(
+    #     objects,
+    #     Sphere(
+    #         SA[220.0,280.0,300.0], 80.0,
+    #         Lambertian(pertexture),
+    #     )
+    # )
+
+    # Random spheres
+    # objects2 = []
+    # white = Lambertian(SolidColor(RGB(0.73,0.73,0.73)))
+    # ns = 1000
+    # for i = 1:1000
+    #     #push!(
+    #     #    objects2,
+    #     #    Sphere(165.0*@SVector(rand(3)), 10.0, white)
+    #     #)
+    #     push!(
+    #         objects,
+    #         Translate(
+    #             RotateY(
+    #                 Sphere(165.0*@SVector(rand(3)), 10.0, white),
+    #                 15.0,
+    #             ),
+    #             SA[-100.0,270.0,395.0],
+    #         )
+    #     )
+    # end
+    # objects2_bvhnode = BVHNode(0.0,0.0,objects2)
+    # push!(
+    #     objects,
+    #     Translate(
+    #         RotateY(objects2_bvhnode, 15.0),
+    #         SA[-100.0,270.0,395.0],
+    #     )
+    # )
+
+
+    return BVHWorld(
+        BVHNode(0.0, 0.01, objects),
+        RGB(0.0, 0.0, 0.0),
+    )
 end

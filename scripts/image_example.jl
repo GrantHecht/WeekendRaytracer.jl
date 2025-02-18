@@ -2,57 +2,152 @@ using WeekendRaytracer
 using Images
 using StaticArrays
 using LinearAlgebra
-using Profile
-using BenchmarkTools
+using ChunkSplitters
 using Infiltrator
-using JET
+using BenchmarkTools
+using Profile
+using PProf
 #using AbbreviatedStackTraces
 
-function main()
-    # Image
-    image = Image(aspect_ratio      = 1.0,
-                  width             = 600,
-                  samples_per_pixel = 400,
-                  max_depth         = 50)
-
-    # World
-    #world = random_scene()
-    #world = two_spheres()
-    #world = two_perlin_spheres()
-    #world = not_so_pale_blue_dot()
-    #world = simple_light()
-    world = cornel_box()
-    #world = cornel_smoke()
-
-    # Camera
-    lookfrom    = SVector(278.0,278.0,-800.0)
-    lookat      = SVector(278.0,278.0,0.0)
-    vup         = SVector(0.0,1.0,0.0)
-    dist_to_foc = 10.0
-    aperture    = 0.1
-    vfov        = 40.0
-    cam = Camera(
-        lookfrom, lookat,
-        vup, vfov,
-        image.aspect_ratio,
-        aperture,
-        dist_to_foc;
-        time0 = 0.0,
-        time1 = 0.0,
-    )
-
-    # Shoot image
-    shoot!(image, cam, world; threaded = true)
-    save("test_new.png", image)
-
-    # u = (rand(1:image.width) + rand()) / image.width
-    # v = (image.height - rand(1:image.height) + rand()) / image.height
-    # r = WeekendRaytracer.get_ray(cam, u, v)
-    # #flag, t, left_hit_first = WeekendRaytracer.min_hit_time(r, world.top_node, cam.time0, cam.time1)
-    # pix_color = WeekendRaytracer.ray_color(r, world, image.max_depth)
-    # pix_color = WeekendRaytracer.get_pixel_color(image, cam, world, div(image.height, 2), div(image.width, 2))
-    # #flag, rec = WeekendRaytracer.hit(r, world.top_node, 0.001, Inf)
-    # #@report_opt WeekendRaytracer.fire_ray(r, world.top_node, 0.001, Inf)
+@enum WorldSetup begin
+    RandomScene
+    Earth
+    PerlinSpheres
+    Quads
+    CornelBox
+    CornelSmoke
+    FinalSceneLoFi
+    FinalSceneHiFi
 end
 
-main()
+function get_setup(world_setup::WorldSetup)
+    if world_setup == CornelBox || world_setup == CornelSmoke
+        world = world_setup == CornelBox ? cornel_box() : cornel_smoke()
+
+        image = Image(
+            aspect_ratio      = 1.0,
+            width             = 200,
+            samples_per_pixel = 100,
+            max_depth         = 50,
+        )
+        cam = Camera(
+            SA[278.0,278.0,-800.0],
+            SA[278.0,278.0,0.0],
+            SA[0.0,1.0,0.0],
+            40.0,
+            image.aspect_ratio,
+            0.1,
+            10.0;
+        )
+    elseif world_setup == FinalSceneLoFi || world_setup == FinalSceneHiFi
+        world = final_scene()
+
+        image = Image(
+            aspect_ratio      = 1.0,
+            width             = world_setup == FinalSceneHiFi ? 800 : 400,
+            samples_per_pixel = world_setup == FinalSceneHiFi ? 10000 : 250,
+            max_depth         = world_setup == FinalSceneHiFi ? 40 : 4,
+        )
+        cam = Camera(
+            SA[478.0,278.0,-600.0],
+            SA[278.0,278.0,0.0],
+            SA[0.0,1.0,0.0],
+            40.0,
+            image.aspect_ratio,
+            0.1,
+            10.0;
+            time0 = 0.0,
+            time1 = 0.01,
+        )
+    elseif world_setup == RandomScene
+        world = random_scene()
+        image = Image(
+            aspect_ratio      = 16.0 / 9.0,
+            width             = 800,
+            samples_per_pixel = 100,
+            max_depth         = 50,
+        )
+        cam = Camera(
+            SA[13.0,2.0,3.0],
+            SA[0.0,0.0,0.0],
+            SA[0.0,1.0,0.0],
+            20.0,
+            image.aspect_ratio,
+            0.1,
+            10.0;
+        )
+    elseif world_setup == Earth
+        world = not_so_pale_blue_dot()
+        image = Image(;
+            aspect_ratio      = 16.0 / 9.0,
+            width             = 400,
+            samples_per_pixel = 100,
+            max_depth         = 50,
+        )
+        cam = Camera(
+            SA[0.0,0.0,12.0],
+            SA[0.0,0.0,0.0],
+            SA[0.0,1.0,0.0],
+            20.0,
+            image.aspect_ratio,
+            0.1,
+            10.0;
+        )
+    elseif world_setup == PerlinSpheres
+        world = two_perlin_spheres()
+        image = Image(
+            aspect_ratio      = 16.0 / 9.0,
+            width             = 800,
+            samples_per_pixel = 100,
+            max_depth         = 50,
+        )
+        cam = Camera(
+            SA[13.0,2.0,3.0],
+            SA[0.0,0.0,0.0],
+            SA[0.0,1.0,0.0],
+            20.0,
+            image.aspect_ratio,
+            0.1,
+            10.0;
+        )
+    elseif world_setup == Quads
+        world = quads()
+        image = Image(
+            aspect_ratio      = 1.0,
+            width             = 800,
+            samples_per_pixel = 100,
+            max_depth         = 50,
+        )
+        cam = Camera(
+            SA[0.0,0.0,9.0],
+            SA[0.0,0.0,0.0],
+            SA[0.0,1.0,0.0],
+            80.0,
+            image.aspect_ratio,
+            0.1,
+            10.0;
+        )
+    end
+    return (world, image, cam)
+end
+
+function main(world, image, cam)
+    # Shoot image
+    shoot!(
+        image, cam, world;
+        threaded    = false,
+        n           = round(Int, Threads.nthreads() / 1),
+        split       = RoundRobin()
+    )
+
+    #save("test_new.png", image)
+end
+
+world, image, cam = get_setup(CornelBox)
+
+#@btime main($world, $image, $cam)
+#Profile.clear_malloc_data()
+Profile.clear()
+main(world, image, cam)
+@profile main(world,image,cam)
+pprof()
