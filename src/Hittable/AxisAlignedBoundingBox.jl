@@ -81,18 +81,23 @@ end
 
 # Hit method
 function hit(ray::Ray, aabb::AxisAlignedBoundingBox, t_min, t_max)
+    is_hit = true
     @inbounds for a in 1:3
         invD    = 1.0 / ray.dir[a]
-        t0      = (aabb.min[a] - ray.orig[a]) * invD
-        t1      = (aabb.max[a] - ray.orig[a]) * invD
-        if invD < 0.0
-            t0, t1 = t1, t0
-        end
-        t_min = t0 > t_min ? t0 : t_min
-        t_max = t1 < t_max ? t1 : t_max
+        v0      = (aabb.min[a] - ray.orig[a]) * invD
+        v1      = (aabb.max[a] - ray.orig[a]) * invD
+        is_pos  = invD > 0.0
+        t0      = ifelse(is_pos, v0, v1)
+        t1      = ifelse(is_pos, v1, v0)
+        t_min   = ifelse(t0 > t_min, t0, t_min)
+        t_max   = ifelse(t1 < t_max, t1, t_max)
+
         if t_max <= t_min
             return false
+            #is_hit = false
+            #break
         end
     end
+    #return is_hit
     return true
 end

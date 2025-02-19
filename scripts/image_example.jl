@@ -6,7 +6,7 @@ using ChunkSplitters
 using Infiltrator
 using BenchmarkTools
 using Profile
-using PProf
+using ProfileView
 #using AbbreviatedStackTraces
 
 @enum WorldSetup begin
@@ -27,7 +27,7 @@ function get_setup(world_setup::WorldSetup)
         image = Image(
             aspect_ratio      = 1.0,
             width             = 200,
-            samples_per_pixel = 100,
+            samples_per_pixel = 50,
             max_depth         = 50,
         )
         cam = Camera(
@@ -135,7 +135,7 @@ function main(world, image, cam)
     # Shoot image
     shoot!(
         image, cam, world;
-        threaded    = false,
+        threaded    = true,
         n           = round(Int, Threads.nthreads() / 1),
         split       = RoundRobin()
     )
@@ -145,9 +145,12 @@ end
 
 world, image, cam = get_setup(CornelBox)
 
-#@btime main($world, $image, $cam)
+@btime main($world, $image, $cam)
 #Profile.clear_malloc_data()
-Profile.clear()
-main(world, image, cam)
-@profile main(world,image,cam)
-pprof()
+# main(world, image, cam)
+# Profile.clear()
+# Profile.@profile main(world, image, cam)
+# #ProfileView.@profview main(world, image, cam)
+# open("profile.txt", "w") do io
+#     Profile.print(io)
+# end
