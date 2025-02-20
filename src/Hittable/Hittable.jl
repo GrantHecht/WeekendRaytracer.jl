@@ -10,14 +10,6 @@ bounding_box(h::HittableObject, time0, time1)       = error("Method not implemen
 bounding_box(h::HittableCollection, time0, time1)   = error("Method not implemented")
 bounding_box(h::HittableWorld, time0, time1)        = error("Method not implemented")
 
-# Depreciated
-# Define hit_time methods for Hittable
-# function hit_time(ray::Ray, h::HittableObject, t_min, t_max)
-#     flag, rec = hit(ray, h, t_min, t_max)
-#     return flag, rec.t
-# end
-# hit_time(ray::Ray, h::HittableCollection, t_min, t_max) = error("Method not implemented")
-
 # Define scatter methods for Hittable
 scatter(ray_in::Ray, h::HittableObject, t_min, t_max) = error("Method not implemented")
 scatter(ray_in::Ray, h::HittableCollection, t_min, t_max) = error("scatter should never be called on a hittable collection! Check your code!")

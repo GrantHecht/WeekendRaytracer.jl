@@ -5,7 +5,8 @@ export Image, shoot!, save
 export Camera
 
 # Hittables
-export Sphere, HittableList, BVHNode
+export Sphere, HittableList
+export BVHNode, MedianSplit, SAH
 
 # Materials
 export Lambertian, Dielectric, Metal

@@ -64,6 +64,12 @@ function longest_axis(box::AxisAlignedBoundingBox)
     end
 end
 
+# Get surface area of box
+function surface_area(box::AxisAlignedBoundingBox)
+    d = box.max - box.min
+    return 2.0*(d[1]*d[2] + d[2]*d[3] + d[3]*d[1])
+end
+
 # Surrounding box method
 function surrounding_box(box0::AxisAlignedBoundingBox, box1::AxisAlignedBoundingBox)
     small = SA[
@@ -80,7 +86,7 @@ function surrounding_box(box0::AxisAlignedBoundingBox, box1::AxisAlignedBounding
 end
 
 # Hit method
-function hit(ray::Ray, aabb::AxisAlignedBoundingBox, t_min, t_max)
+@inline function hit(ray::Ray, aabb::AxisAlignedBoundingBox, t_min, t_max)
     is_hit = true
     @inbounds for a in 1:3
         invD    = 1.0 / ray.dir[a]
@@ -91,13 +97,7 @@ function hit(ray::Ray, aabb::AxisAlignedBoundingBox, t_min, t_max)
         t1      = ifelse(is_pos, v1, v0)
         t_min   = ifelse(t0 > t_min, t0, t_min)
         t_max   = ifelse(t1 < t_max, t1, t_max)
-
-        if t_max <= t_min
-            return false
-            #is_hit = false
-            #break
-        end
+        is_hit  = ifelse(is_hit, t_max > t_min, false)
     end
-    #return is_hit
-    return true
+    return is_hit
 end

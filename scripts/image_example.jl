@@ -5,8 +5,6 @@ using LinearAlgebra
 using ChunkSplitters
 using Infiltrator
 using BenchmarkTools
-using Profile
-using ProfileView
 #using AbbreviatedStackTraces
 
 @enum WorldSetup begin
@@ -26,7 +24,7 @@ function get_setup(world_setup::WorldSetup)
 
         image = Image(
             aspect_ratio      = 1.0,
-            width             = 200,
+            width             = 600,
             samples_per_pixel = 50,
             max_depth         = 50,
         )
@@ -140,14 +138,14 @@ function main(world, image, cam)
         split       = RoundRobin()
     )
 
-    #save("test_new.png", image)
+    save("test_new.png", image)
 end
 
-world, image, cam = get_setup(CornelBox)
+world, image, cam = get_setup(FinalSceneHiFi)
 
-@btime main($world, $image, $cam)
+#@btime main($world, $image, $cam)
 #Profile.clear_malloc_data()
-# main(world, image, cam)
+main(world, image, cam)
 # Profile.clear()
 # Profile.@profile main(world, image, cam)
 # #ProfileView.@profview main(world, image, cam)

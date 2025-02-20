@@ -121,6 +121,7 @@ function cornel_box()
                         XYRectangle(0.0, 555.0, 0.0, 555.0, 555.0, white),
                         box1, box2
                     ],
+                    SAH(),
                 ),
                 RGB(0.0, 0.0, 0.0)
             )
@@ -227,13 +228,13 @@ function final_scene()
     # push!(objects, sphere)
 
     # Glass sphere and metal spheres
-    # push!(
-    #     objects,
-    #     Sphere(
-    #         SA[260.0,150.0,45.0], 50.0,
-    #         Dielectric(1.5),
-    #     )
-    # )
+    push!(
+        objects,
+        Sphere(
+            SA[260.0,150.0,45.0], 50.0,
+            Dielectric(1.5),
+        )
+    )
     push!(
         objects,
         Sphere(
@@ -247,51 +248,51 @@ function final_scene()
         SA[360.0,150.0,145.0], 70.0,
         Dielectric(1.5),
     )
-    # boundary2 = ConstantMediumSphere(
-    #     SA[0.0,0.0,0.0], 5000.0, 0.0001, SolidColor(RGB(1.0,1.0,1.0))
-    # )
-    # push!(objects, boundary1)
+    boundary2 = ConstantMediumSphere(
+        SA[0.0,0.0,0.0], 5000.0, 0.0001, SolidColor(RGB(1.0,1.0,1.0))
+    )
+    push!(objects, boundary1)
     push!(objects, ConstantMedium(boundary1, 0.2, SolidColor(RGB(0.2,0.4,0.9))))
-    # push!(objects, boundary2)
+    push!(objects, boundary2)
 
     # Earth
-    # earth_texture = ImageTexture(earth)
-    # earth_surface = Lambertian(earth_texture)
-    # push!(
-    #     objects,
-    #     Sphere(SA[400.0, 200.0, 400.0], 100.0, earth_surface)
-    # )
+    earth_texture = ImageTexture(earth)
+    earth_surface = Lambertian(earth_texture)
+    push!(
+        objects,
+        Sphere(SA[400.0, 200.0, 400.0], 100.0, earth_surface)
+    )
 
     # Noise
-    # pertexture = NoiseTexture(0.2)
-    # push!(
-    #     objects,
-    #     Sphere(
-    #         SA[220.0,280.0,300.0], 80.0,
-    #         Lambertian(pertexture),
-    #     )
-    # )
+    pertexture = NoiseTexture(0.2)
+    push!(
+        objects,
+        Sphere(
+            SA[220.0,280.0,300.0], 80.0,
+            Lambertian(pertexture),
+        )
+    )
 
     # Random spheres
     # objects2 = []
-    # white = Lambertian(SolidColor(RGB(0.73,0.73,0.73)))
-    # ns = 1000
-    # for i = 1:1000
-    #     #push!(
-    #     #    objects2,
-    #     #    Sphere(165.0*@SVector(rand(3)), 10.0, white)
-    #     #)
-    #     push!(
-    #         objects,
-    #         Translate(
-    #             RotateY(
-    #                 Sphere(165.0*@SVector(rand(3)), 10.0, white),
-    #                 15.0,
-    #             ),
-    #             SA[-100.0,270.0,395.0],
-    #         )
-    #     )
-    # end
+    white = Lambertian(SolidColor(RGB(0.73,0.73,0.73)))
+    ns = 1000
+    for i = 1:1000
+        #push!(
+        #    objects2,
+        #    Sphere(165.0*@SVector(rand(3)), 10.0, white)
+        #)
+        push!(
+            objects,
+            Translate(
+                RotateY(
+                    Sphere(165.0*@SVector(rand(3)), 10.0, white),
+                    15.0,
+                ),
+                SA[-100.0,270.0,395.0],
+            )
+        )
+    end
     # objects2_bvhnode = BVHNode(0.0,0.0,objects2)
     # push!(
     #     objects,
@@ -303,7 +304,7 @@ function final_scene()
 
 
     return BVHWorld(
-        BVHNode(0.0, 0.01, objects),
+        BVHNode(0.0, 0.01, objects, SAH()),
         RGB(0.0, 0.0, 0.0),
     )
 end

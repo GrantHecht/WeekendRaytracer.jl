@@ -18,7 +18,7 @@ function Box(p0, p1, mat)
         XZRectangle(p0.x, p1.x, p0.z, p1.z, p0.y, mat),
         YZRectangle(p0.y, p1.y, p0.z, p1.z, p1.x, mat),
         YZRectangle(p0.y, p1.y, p0.z, p1.z, p0.x, mat)
-    ])
+    ], SAH())
     return Box(box_min, box_max, sides, mat)
 end
 
